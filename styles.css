@@ -44,124 +44,18 @@ body {
 /* Layout Grid */
 .layout {
   display: grid;
-  grid-template-columns: 56px var(--sidebar-width) 1fr;
+  grid-template-columns: var(--sidebar-width) 1fr;
   height: 100vh;
   background: #ffffff;
   position: relative;
 }
 
 .layout.sidebar-collapsed {
-  grid-template-columns: 56px 0px 1fr;
+  grid-template-columns: 0px 1fr;
 }
 
-/* Advanced Mode Vertical Sidebar (Icon Bar) */
-.icon-sidebar {
-  grid-column: 1;
-  background: linear-gradient(180deg, #fbfcfd 0%, #f6f8fa 100%);
-  border-right: 1px solid var(--border);
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  padding: 14px 0 12px;
-  width: 56px;
-  z-index: 15;
-  contain: layout style;
-}
-
-.icon-sidebar-btn {
-  position: relative;
-  width: 40px;
-  height: 40px;
-  border-radius: 10px;
-  border: none;
-  background: transparent;
-  color: var(--text-muted);
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: background-color 0.18s ease, color 0.18s ease, transform 0.18s ease;
-  will-change: background-color;
-  -webkit-tap-highlight-color: transparent;
-}
-
-.icon-sidebar-btn::before {
-  content: '';
-  position: absolute;
-  left: -8px;
-  top: 50%;
-  transform: translateY(-50%) scaleY(0);
-  width: 3px;
-  height: 22px;
-  background: var(--primary);
-  border-radius: 0 3px 3px 0;
-  transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-.icon-sidebar-btn:hover {
-  background: rgba(37, 99, 235, 0.08);
-  color: var(--primary);
-}
-
-.icon-sidebar-btn:focus-visible {
-  outline: none;
-  box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.35);
-}
-
-.icon-sidebar-btn[data-tooltip]::after {
-  content: attr(data-tooltip);
-  position: absolute;
-  left: calc(100% + 10px);
-  top: 50%;
-  transform: translate(-4px, -50%);
-  background: #1f2937;
-  color: #fff;
-  padding: 5px 9px;
-  border-radius: 6px;
-  font-size: 11.5px;
-  font-weight: 500;
-  font-family: 'Inter', system-ui, -apple-system, sans-serif;
-  white-space: nowrap;
+.layout.sidebar-collapsed .sidebar {
   pointer-events: none;
-  opacity: 0;
-  transition: opacity 120ms ease, transform 120ms ease;
-  z-index: 200;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-}
-
-.icon-sidebar-btn[data-tooltip]:hover::after {
-  opacity: 1;
-  transform: translate(0, -50%);
-}
-
-.icon-sidebar-btn:active {
-  background: rgba(37, 99, 235, 0.14);
-  transform: scale(0.96);
-}
-
-/* Active state */
-.icon-sidebar-btn.active {
-  color: var(--primary);
-  background: rgba(37, 99, 235, 0.1);
-}
-
-.icon-sidebar-btn.active::before {
-  transform: translateY(-50%) scaleY(1);
-}
-
-/* When sidebar is collapsed */
-.layout.sidebar-collapsed .icon-sidebar-btn.active {
-  background: transparent;
-}
-
-.layout.sidebar-collapsed .icon-sidebar-btn.active::before {
-  transform: translateY(-50%) scaleY(0);
-}
-
-.icon-sidebar-btn svg {
-  width: 20px;
-  height: 20px;
-  stroke-width: 2;
 }
 
 /* Sidebar */
@@ -232,6 +126,12 @@ body {
   outline: none;
   border-color: var(--primary);
   box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
+}
+
+.icon-button.is-active {
+  color: var(--primary);
+  background: rgba(37, 99, 235, 0.1);
+  border-color: rgba(37, 99, 235, 0.28);
 }
 
 .search-box {
@@ -732,6 +632,9 @@ input.input-locked:focus {
   justify-content: center;
   font-size: 20px;
   transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+}
+.layout.sidebar-collapsed ~ .sidebar-toggle-floating {
+  display: flex;
 }
 .sidebar-toggle-floating:hover {
   transform: scale(1.06);
@@ -1253,7 +1156,7 @@ input.input-locked:focus {
 /* Responsive */
 @media (max-width: 1100px) {
   .layout {
-    grid-template-columns: 56px var(--sidebar-width) 1fr;
+    grid-template-columns: var(--sidebar-width) 1fr;
   }
 
 }
@@ -1264,16 +1167,16 @@ input.input-locked:focus {
   }
 
   .layout {
-    grid-template-columns: 56px 1fr;
+    grid-template-columns: 1fr;
   }
 
   .layout.sidebar-collapsed {
-    grid-template-columns: 56px 1fr;
+    grid-template-columns: 1fr;
   }
 
   .sidebar {
     position: fixed;
-    left: 56px;
+    left: 0;
     top: 0;
     bottom: 0;
     width: var(--sidebar-width);
@@ -1290,19 +1193,7 @@ input.input-locked:focus {
   }
 
   .viewer {
-    grid-column: 2;
-  }
-
-
-  /* Slightly smaller buttons on mobile */
-  .icon-sidebar-btn {
-    width: 36px;
-    height: 36px;
-  }
-  
-  .icon-sidebar-btn svg {
-    width: 18px;
-    height: 18px;
+    grid-column: 1;
   }
 }
 

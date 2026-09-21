@@ -255,18 +255,3 @@ footer {
   color: var(--text-muted);
 }
 
-.contact-box {
-  background: var(--bg-alt);
-  padding: 30px;
-  border-radius: 12px;
-  text-align: center;
-  margin-top: 20px;
-}
-
-.contact-email {
-  font-size: 24px;
-  font-weight: 700;
-  color: var(--primary);
-  margin-top: 10px;
-  display: block;
-}
