@@ -1,39 +1,3 @@
-import {
-  initializeApp,
-  getApps,
-  getApp,
-} from "https://www.gstatic.com/firebasejs/12.6.0/firebase-app.js";
-import { getAnalytics } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-analytics.js";
-import {
-  getAuth,
-  isSignInWithEmailLink,
-  onAuthStateChanged,
-  signOut,
-  sendSignInLinkToEmail,
-  signInWithEmailLink,
-  GoogleAuthProvider,
-  signInWithPopup
-} from "https://www.gstatic.com/firebasejs/12.6.0/firebase-auth.js";
-import BINAS_CONFIG_DEFAULT from './config.js';
-
-// Merge default config with local admin overrides
-const LOCAL_CONFIG_KEY = 'binas:admin-config-override';
-let BINAS_CONFIG = { ...BINAS_CONFIG_DEFAULT };
-try {
-  const localOverride = localStorage.getItem(LOCAL_CONFIG_KEY);
-  if (localOverride) {
-    BINAS_CONFIG = { ...BINAS_CONFIG, ...JSON.parse(localOverride) };
-  }
-} catch (e) {
-  console.warn('Could not load local config override:', e);
-}
-import {
-  getFirestore,
-  doc,
-  getDoc,
-  setDoc
-} from "https://www.gstatic.com/firebasejs/12.6.0/firebase-firestore.js";
-
 // --- Elements ---
 const navList = document.getElementById('nav-list');
 const favoritesList = document.getElementById('favorites-body');
@@ -49,31 +13,10 @@ const navDialogOpenBtn = document.getElementById('nav-dialog-open');
 const navDialogCloseBtn = document.getElementById('nav-dialog-close');
 const navDialog = document.getElementById('nav-dialog');
 const viewerFrame = document.getElementById('pdf-viewer-frame');
-
-// Sidebar Icons & Bottom Menu
-const btnMenuToc = document.getElementById('btn-menu-toc');
 const btnMenuFavorites = document.getElementById('btn-menu-favorites');
-const btnMenuRecent = document.getElementById('btn-menu-recent');
-const recentView = document.getElementById('recent-view');
+const sidebarCollapseBtn = document.getElementById('sidebar-collapse');
+const navSearchBox = document.getElementById('nav-search-box');
 const recentBody = document.getElementById('recent-body');
-const btnMenuAccount = document.getElementById('btn-menu-account');
-const btnMenuSettings = document.getElementById('btn-menu-settings');
-const iconSidebar = document.querySelector('.icon-sidebar');
-
-// Overlays
-const settingsOverlay = document.getElementById('settings-overlay');
-const settingsClose = document.getElementById('settings-close');
-
-const accountOverlay = document.getElementById('account-overlay');
-const accountClose = document.getElementById('account-close');
-const overlayAuthName = document.getElementById('overlay-auth-name');
-const overlayAuthEmail = document.getElementById('overlay-auth-email');
-const overlayLogout = document.getElementById('overlay-logout');
-const overlayLoginInput = document.getElementById('overlay-login-input');
-const overlayLoginBtn = document.getElementById('overlay-login-btn');
-const overlayLoginMsg = document.getElementById('overlay-login-msg');
-const btnLoginGoogle = document.getElementById('btn-login-google');
-const overlayLoginSection = document.getElementById('overlay-login-section');
 
 // Context Menu (rebuilt dynamically per item)
 const contextMenu = document.getElementById('context-menu');
@@ -130,23 +73,9 @@ let navigationData = [];
 let favorites = []; // Array of objects { page, title, label, theme }
 let currentSearchQuery = '';
 let initialSearchQuery = '';
-let firebaseApp;
-let auth;
-let firestore;
-let currentUser = null;
 let currentPage = 1;
-let isProcessingAuth = false; // Prevent race conditions
+let currentSidebarView = 'toc';
 
-const firebaseAuthDomain = BINAS_CONFIG?.authDomain || 'account.binas.app';
-const firebaseConfig = {
-  apiKey: "AIzaSyBgXo3zllXtFJZDn4elpY8DemEQG_ltMk0",
-  authDomain: firebaseAuthDomain,
-  projectId: "binas-91a32",
-  storageBucket: "binas-91a32.firebasestorage.app",
-  messagingSenderId: "971498903694",
-  appId: "1:971498903694:web:5ab8b630b183f5204ed1df",
-  measurementId: "G-1LLBGZNRNC",
-};
 // Self-hosted PDF.js viewer so the PDF can be loaded via a relative path.
 // The mozilla.github.io demo viewer is a different origin; browsers then
 // block fetching Binas.pdf (CORS). Same-origin relative loading avoids that.
@@ -161,25 +90,6 @@ let activeVakCategory = null; // null = alle
 function getViewerUrl() {
   return `${viewerBaseUrl}?file=${encodeURIComponent(pdfRelativePath)}`;
 }
-
-function initFirebase() {
-  if (!firebaseApp) {
-    firebaseApp = getApps().length ? getApp() : initializeApp(firebaseConfig);
-    try {
-      getAnalytics(firebaseApp);
-    } catch (error) {
-      console.warn('Analytics niet beschikbaar:', error);
-    }
-  }
-  if (!auth) {
-    auth = getAuth(firebaseApp);
-    auth.languageCode = 'nl';
-  }
-  if (!firestore) {
-    firestore = getFirestore(firebaseApp);
-  }
-}
-
 
 // Show confirmation dialog
 function showConfirmDialog(title, message) {
@@ -726,9 +636,7 @@ function countFolderItems(folder) {
 
 // Public entry point: clicking a star toggles favorite status with the right UX
 async function handleStarClick(item, starBtn) {
-  // Favorites work both offline (localStorage) and online (Firestore). Login
-  // is no longer required — when the user signs in, local favorites are
-  // merged into their cloud account.
+  // Favorites are stored locally in localStorage so they keep working offline.
   const key = getFavoriteKey(item);
   const existing = findFavoriteByKey(key, favorites);
 
@@ -951,72 +859,17 @@ function migrateFavorites(favs) {
   });
 }
 
-function isSignedInRealUser() {
-  return !!(currentUser && !currentUser.isAnonymous);
-}
-
-async function saveFavorites() {
-  // Real signed-in users -> Firestore. Anonymous and logged-out users ->
-  // localStorage. This keeps offline favs safe and prevents orphaning data
-  // on throwaway anonymous UIDs.
-  if (isSignedInRealUser()) {
-    try {
-        await setDoc(doc(firestore, 'users', currentUser.uid), {
-            favorites: favorites
-        }, { merge: true });
-    } catch(e) { console.error('Error syncing favorites', e); }
-  } else {
-    try {
-      localStorage.setItem(favoritesKey, JSON.stringify(favorites));
-    } catch (e) { /* storage full or unavailable */ }
-  }
+function saveFavorites() {
+  try {
+    localStorage.setItem(favoritesKey, JSON.stringify(favorites));
+  } catch (e) { /* storage full or unavailable */ }
 }
 
 function loadFavorites() {
-  // Initial load (auth state hasn't resolved yet): fall back to localStorage.
-  // The auth handler will refine this once it knows if the user is signed in.
-  if (!isSignedInRealUser()) {
-    favorites = readLocalFavoritesRaw();
-  }
+  favorites = readLocalFavoritesRaw();
 }
 
-// Load favorites from cloud for logged-in user
-async function loadCloudFavorites(user) {
-  try {
-    const docSnap = await getDoc(doc(firestore, 'users', user.uid));
-    if (docSnap.exists()) {
-      const data = docSnap.data();
-      favorites = migrateFavorites(data.favorites || []);
-    } else {
-      // User doc doesn't exist yet, create empty
-      favorites = [];
-      await setDoc(doc(firestore, 'users', user.uid), { favorites: [] }, { merge: true });
-    }
-  } catch (e) {
-    console.error('Error loading cloud favorites:', e);
-    favorites = [];
-  }
-  renderFavoritesList();
-  refreshNavStars();
-}
-
-// Read raw cloud favorites without touching the in-memory `favorites` state.
-// Used by the merge-on-login flow so we can combine before assigning.
-async function fetchCloudFavorites(user) {
-  try {
-    const docSnap = await getDoc(doc(firestore, 'users', user.uid));
-    if (docSnap.exists()) {
-      const data = docSnap.data();
-      return migrateFavorites(data.favorites || []);
-    }
-  } catch (e) {
-    console.error('Error reading cloud favorites:', e);
-  }
-  return [];
-}
-
-// Read the locally-stored favorites (used while logged out). Returns [] on
-// any error / missing data so the caller can safely treat it as a normal list.
+// Read the locally-stored favorites. Returns [] on any error / missing data.
 function readLocalFavoritesRaw() {
   try {
     const stored = localStorage.getItem(favoritesKey);
@@ -1025,127 +878,6 @@ function readLocalFavoritesRaw() {
   } catch (e) {
     return [];
   }
-}
-
-// Merge a list of locally-stored favorites into the cloud list, in place.
-//
-// Rules:
-//  - Items are deduplicated by their stable favorite key (`label::title`),
-//    so a table that is already favourited online won't be added twice.
-//  - Folders are matched by name (trimmed). When a local folder has the same
-//    name as a cloud folder, their items are merged into the existing cloud
-//    folder instead of creating a duplicate folder. New folders are added.
-//  - Order: existing cloud entries keep their position; new local entries
-//    are appended at the end of the relevant list.
-//
-// Returns { merged, addedItemCount } where addedItemCount counts new leaf
-// favorites that were brought in from local storage.
-function mergeFavoritesLists(cloudList, localList) {
-  if (!Array.isArray(cloudList)) cloudList = [];
-  if (!Array.isArray(localList) || localList.length === 0) {
-    return { merged: cloudList, addedItemCount: 0 };
-  }
-
-  const cloudItemKeys = new Set();
-  const collectKeys = (list) => {
-    for (const it of list) {
-      if (!it) continue;
-      if (it.type === 'folder') {
-        if (Array.isArray(it.items)) collectKeys(it.items);
-      } else {
-        cloudItemKeys.add(`${it.label || ''}::${it.title || ''}`);
-      }
-    }
-  };
-  collectKeys(cloudList);
-
-  let addedItemCount = 0;
-
-  const visit = (localItems, cloudParentList) => {
-    for (const local of localItems) {
-      if (!local) continue;
-      if (local.type === 'folder') {
-        const localName = (local.name || '').trim();
-        let cloudFolder = cloudParentList.find(
-          (it) => it && it.type === 'folder' && (it.name || '').trim() === localName
-        );
-        if (!cloudFolder) {
-          cloudFolder = {
-            id: local.id || generateUUID(),
-            type: 'folder',
-            name: local.name,
-            color: local.color,
-            collapsed: !!local.collapsed,
-            items: []
-          };
-          cloudParentList.push(cloudFolder);
-        }
-        if (!Array.isArray(cloudFolder.items)) cloudFolder.items = [];
-        if (Array.isArray(local.items)) visit(local.items, cloudFolder.items);
-      } else {
-        const key = `${local.label || ''}::${local.title || ''}`;
-        if (cloudItemKeys.has(key)) continue;
-        cloudItemKeys.add(key);
-        cloudParentList.push({ ...local, id: local.id || generateUUID() });
-        addedItemCount += 1;
-      }
-    }
-  };
-
-  visit(localList, cloudList);
-  return { merged: cloudList, addedItemCount };
-}
-
-// Called when a real user signs in. Combines any locally-stored favorites
-// with the user's cloud favorites and persists the result. Local storage is
-// cleared on success so we don't keep a stale offline copy lying around.
-async function syncFavoritesOnLogin(user) {
-  const localFavs = readLocalFavoritesRaw();
-  const cloudFavs = await fetchCloudFavorites(user);
-
-  if (localFavs.length === 0) {
-    favorites = cloudFavs;
-    // Make sure the user doc exists for fresh accounts.
-    try {
-      await setDoc(doc(firestore, 'users', user.uid), { favorites: cloudFavs }, { merge: true });
-    } catch (e) { /* non-fatal */ }
-    renderFavoritesList();
-    refreshNavStars();
-    return;
-  }
-
-  const { merged, addedItemCount } = mergeFavoritesLists(cloudFavs, localFavs);
-  favorites = merged;
-
-  try {
-    await setDoc(doc(firestore, 'users', user.uid), { favorites: merged }, { merge: true });
-    // Only clear local AFTER the cloud write succeeds — otherwise we'd lose
-    // the offline favorites if the network call fails.
-    localStorage.removeItem(favoritesKey);
-    if (addedItemCount > 0) {
-      const word = addedItemCount === 1 ? 'favoriet' : 'favorieten';
-      showToast(`${addedItemCount} lokale ${word} samengevoegd met je account`, 'success');
-    }
-  } catch (e) {
-    console.error('Error syncing local favorites to cloud:', e);
-    // Cloud write failed — keep local copy intact and show what we have.
-    showToast('Kon favorieten niet synchroniseren. Probeer later opnieuw.', 'error');
-  }
-
-  renderFavoritesList();
-  refreshNavStars();
-}
-
-// Clear favorites display when logged out and fall back to whatever the user
-// has stored locally. Right after a successful login-merge this will be an
-// empty array (we cleared localStorage on success), which is exactly what
-// we want — the cloud favs disappear and nothing is left to show. If the
-// user later adds new favs while signed out, they live in localStorage and
-// show up here.
-function clearFavoritesDisplay() {
-  favorites = readLocalFavoritesRaw();
-  renderFavoritesList();
-  refreshNavStars();
 }
 
 function renderFavoritesNode(item, container, parentList, index) {
@@ -1428,10 +1160,6 @@ function renderFavoritesList() {
   const loose = favorites.filter(it => it.type !== 'folder');
 
   if (folders.length === 0 && loose.length === 0) {
-    const isLoggedOut = !currentUser || currentUser.isAnonymous;
-    const syncHint = isLoggedOut
-      ? `<p class="fav-empty-hint">Tip: log in om je favorieten te synchroniseren tussen apparaten.</p>`
-      : '';
     const empty = document.createElement('div');
     empty.className = 'fav-empty-state';
     empty.innerHTML = `
@@ -1442,11 +1170,10 @@ function renderFavoritesList() {
         <button type="button" class="primary-button fav-empty-btn-folder">Nieuwe map</button>
         <button type="button" class="secondary-button fav-empty-btn-toc">Naar inhoud</button>
       </div>
-      ${syncHint}
     `;
     favoritesList.appendChild(empty);
     empty.querySelector('.fav-empty-btn-folder')?.addEventListener('click', createNewFolder);
-    empty.querySelector('.fav-empty-btn-toc')?.addEventListener('click', () => btnMenuToc?.click());
+    empty.querySelector('.fav-empty-btn-toc')?.addEventListener('click', () => showSidebarView('toc'));
     return;
   }
 
@@ -1652,275 +1379,55 @@ function buildFolderItemRow(item) {
   return row;
 }
 
-// --- Overlays ---
+// --- Sidebar ---
 
-function toggleOverlay(overlay, show) {
-  if (show) {
-    overlay.classList.add('visible');
-    overlay.setAttribute('aria-hidden', 'false');
-  } else {
-    overlay.classList.remove('visible');
-    overlay.setAttribute('aria-hidden', 'true');
-  }
+function isMobileLayout() {
+  return window.matchMedia('(max-width: 900px)').matches;
 }
 
-function initOverlays() {
-  // Settings
-  btnMenuSettings?.addEventListener('click', () => toggleOverlay(settingsOverlay, true));
-  settingsClose?.addEventListener('click', () => toggleOverlay(settingsOverlay, false));
-
-  // Account
-  btnMenuAccount?.addEventListener('click', () => toggleOverlay(accountOverlay, true));
-  accountClose?.addEventListener('click', () => toggleOverlay(accountOverlay, false));
-
-  // Close overlays when clicking on background
-  [settingsOverlay, accountOverlay].forEach(overlay => {
-    if (overlay) {
-      overlay.addEventListener('click', (e) => {
-        // Only close if clicking directly on the overlay background, not its children
-        if (e.target === overlay) {
-          toggleOverlay(overlay, false);
-        }
-      });
-    }
-  });
+function setSidebarCollapsed(collapsed) {
+  if (!layout) return;
+  layout.classList.toggle('sidebar-collapsed', collapsed);
+  try {
+    localStorage.setItem(sidebarCollapsedKey, String(collapsed));
+  } catch {}
+  const showOverlay = !collapsed && isMobileLayout();
+  sidebarOverlay?.classList.toggle('visible', showOverlay);
+  sidebarOverlay?.setAttribute('aria-hidden', showOverlay ? 'false' : 'true');
 }
-
-// --- Auth Logic ---
-
-function initAuth() {
-  initFirebase();
-
-  btnLoginGoogle?.addEventListener('click', async () => {
-     const provider = new GoogleAuthProvider();
-     try {
-         await signInWithPopup(auth, provider);
-         toggleOverlay(accountOverlay, false);
-     } catch(e) {
-         console.error(e);
-         overlayLoginMsg.textContent = e.message;
-         overlayLoginMsg.dataset.variant = 'error';
-     }
-  });
-
-  overlayLoginBtn?.addEventListener('click', async () => {
-    const email = overlayLoginInput.value.trim();
-    if (!email) return;
-    overlayLoginMsg.textContent = 'Link versturen...';
-    try {
-        await sendSignInLinkToEmail(auth, email, {
-            url: window.location.href,
-            handleCodeInApp: true
-        });
-        window.localStorage.setItem('binas:login-email', email);
-        overlayLoginMsg.textContent = 'Check je e-mail!';
-        overlayLoginMsg.dataset.variant = 'success';
-    } catch (e) {
-        overlayLoginMsg.textContent = e.message;
-        overlayLoginMsg.dataset.variant = 'error';
-    }
-  });
-
-  overlayLogout?.addEventListener('click', () => {
-     signOut(auth);
-  });
-
-  onAuthStateChanged(auth, async (user) => {
-    if (isProcessingAuth) return;
-    isProcessingAuth = true;
-    
-    const previousUser = currentUser;
-    currentUser = user;
-    const accountCircle = document.querySelector('.account-circle');
-
-    if (user && !user.isAnonymous) {
-        const displayName = user.displayName?.trim();
-        if (overlayAuthName) {
-          if (displayName) {
-            overlayAuthName.textContent = displayName;
-            overlayAuthName.hidden = false;
-          } else {
-            overlayAuthName.textContent = '';
-            overlayAuthName.hidden = true;
-          }
-        }
-        overlayAuthEmail.textContent = user.email || 'Anoniem';
-        overlayLogout.hidden = false;
-        
-        // Hide login options when logged in
-        if (overlayLoginSection) overlayLoginSection.hidden = true;
-// Show Google profile photo if available, otherwise first letter of email
-        if (accountCircle) {
-            if (user.photoURL) {
-                // User has a profile photo (e.g., Google login)
-                accountCircle.innerHTML = `<img src="${user.photoURL}" alt="Profielfoto" class="account-photo" referrerpolicy="no-referrer" />`;
-            } else {
-                // Fallback to first letter of email
-                const letter = (user.email || 'A').charAt(0).toUpperCase();
-                accountCircle.innerHTML = `<span style="font-weight:700; font-size:14px; color:var(--text-main);">${letter}</span>`;
-            }
-            accountCircle.style.display = 'flex';
-            accountCircle.style.alignItems = 'center';
-            accountCircle.style.justifyContent = 'center';
-        }
-
-        // Merge any locally-stored favorites into the cloud account, then
-        // load the combined set. Local-only items kept by name-matched
-        // folders, deduplicated by table identity, no duplicates.
-        await syncFavoritesOnLogin(user);
-
-        // Show admin link if admin email
-        updateAdminButtonVisibility(user.email);
-    } else {
-        if (overlayAuthName) {
-          overlayAuthName.textContent = '';
-          overlayAuthName.hidden = true;
-        }
-        overlayAuthEmail.textContent = 'Niet ingelogd';
-        overlayLogout.hidden = true;
-        
-        // Show login options when not logged in
-        if (overlayLoginSection) overlayLoginSection.hidden = false;
-
-        // Show generic vector icon
-        if (accountCircle) {
-            accountCircle.innerHTML = `
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:16px; height:16px;">
-               <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
-               <circle cx="12" cy="7" r="4"></circle>
-            </svg>`;
-            accountCircle.style.display = 'flex';
-            accountCircle.style.alignItems = 'center';
-            accountCircle.style.justifyContent = 'center';
-        }
-
-        // Logged out / anonymous: drop any cloud favs from view and fall
-        // back to whatever is in localStorage (empty after a recent merge).
-        clearFavoritesDisplay();
-
-        // Hide admin link
-        updateAdminButtonVisibility(null);
-}
-    
-    isProcessingAuth = false;
-  });
-
-  // Finish Magic Link Sign In
-  if (isSignInWithEmailLink(auth, window.location.href)) {
-      let email = window.localStorage.getItem('binas:login-email');
-      if (!email) {
-        // Show email confirmation dialog
-        showEmailConfirmDialog().then(confirmedEmail => {
-          if (confirmedEmail) {
-            completeEmailSignIn(confirmedEmail);
-          }
-        });
-      } else {
-        completeEmailSignIn(email);
-      }
-  }
-
-  function completeEmailSignIn(email) {
-    signInWithEmailLink(auth, email, window.location.href)
-      .then(() => {
-          window.history.replaceState({}, '', window.location.pathname);
-          showToast('Succesvol ingelogd!', 'success');
-      })
-      .catch(e => showToast(e.message, 'error'));
-  }
-
-  function showEmailConfirmDialog() {
-    return new Promise((resolve) => {
-      const dialogOverlay = document.createElement('div');
-      dialogOverlay.className = 'binas-confirm-overlay';
-      dialogOverlay.innerHTML = `
-        <div class="binas-confirm-dialog">
-          <h3 class="binas-confirm-title">E-mailadres bevestigen</h3>
-          <p class="binas-confirm-text">Vul je e-mailadres in om in te loggen:</p>
-          <input type="email" class="binas-confirm-input" id="email-confirm-input" placeholder="jij@example.com" style="width:100%; padding:10px; border:1px solid var(--border); border-radius:6px; font-size:14px; margin-bottom:16px;">
-          <div class="binas-confirm-buttons">
-            <button class="binas-confirm-btn binas-confirm-btn--cancel">Annuleren</button>
-            <button class="binas-confirm-btn binas-confirm-btn--confirm">Bevestigen</button>
-          </div>
-        </div>
-      `;
-      
-      document.body.appendChild(dialogOverlay);
-      const input = dialogOverlay.querySelector('#email-confirm-input');
-      
-      requestAnimationFrame(() => {
-        dialogOverlay.classList.add('binas-confirm-overlay--visible');
-        input.focus();
-      });
-      
-      const cleanup = () => {
-        dialogOverlay.classList.remove('binas-confirm-overlay--visible');
-        setTimeout(() => dialogOverlay.remove(), 300);
-      };
-      
-      dialogOverlay.querySelector('.binas-confirm-btn--confirm').addEventListener('click', () => {
-        const email = input.value.trim();
-        cleanup();
-        resolve(email || null);
-      });
-      
-      dialogOverlay.querySelector('.binas-confirm-btn--cancel').addEventListener('click', () => {
-        cleanup();
-        resolve(null);
-      });
-      
-      input.addEventListener('keydown', (e) => {
-        if (e.key === 'Enter') {
-          const email = input.value.trim();
-          cleanup();
-          resolve(email || null);
-        }
-      });
-    });
-  }
-}
-
-// Update admin button visibility based on email
-async function updateAdminButtonVisibility(email) {
-  const adminBtn = document.getElementById('btn-admin-link');
-  if (adminBtn) {
-    if (!email) {
-      adminBtn.hidden = true;
-      return;
-    }
-    
-    // Check if primary admin
-    const primaryAdmin = BINAS_CONFIG?.primaryAdmin || 'vandersanderoy@hotmail.com';
-    if (email === primaryAdmin) {
-      adminBtn.hidden = false;
-      return;
-    }
-    
-    // Check Firestore for other admins
-    try {
-      const adminDoc = await getDoc(doc(firestore, 'admins', email));
-      adminBtn.hidden = !adminDoc.exists();
-    } catch (e) {
-      console.error('Error checking admin status:', e);
-      adminBtn.hidden = true;
-    }
-  }
-}
-
-// --- General Sidebar Logic ---
 
 function toggleSidebar() {
-    const collapsed = layout.classList.contains('sidebar-collapsed');
-    layout.classList.toggle('sidebar-collapsed', !collapsed);
-    localStorage.setItem(sidebarCollapsedKey, String(!collapsed));
+  const collapsed = layout.classList.contains('sidebar-collapsed');
+  setSidebarCollapsed(!collapsed);
 }
 
+function restoreSidebarCollapsed() {
+  let collapsed = false;
+  try {
+    collapsed = localStorage.getItem(sidebarCollapsedKey) === 'true';
+  } catch {}
+  setSidebarCollapsed(collapsed);
+}
+
+function showSidebarView(view) {
+  currentSidebarView = view === 'favorites' ? 'favorites' : 'toc';
+  const showingFavs = currentSidebarView === 'favorites';
+  if (navList) navList.hidden = showingFavs;
+  if (favoritesView) favoritesView.hidden = !showingFavs;
+  btnMenuFavorites?.classList.toggle('is-active', showingFavs);
+  if (navSearchBox) navSearchBox.hidden = showingFavs;
+  if (navDialogOpenBtn) navDialogOpenBtn.hidden = showingFavs;
+  if (showingFavs) {
+    renderFavoritesList();
+  } else {
+    setTimeout(() => navSearch?.focus(), 50);
+  }
+}
 
 // --- Main Init ---
 
 document.addEventListener('DOMContentLoaded', () => {
-  // Viewers & Navigation
-  initFirebase();
+  restoreSidebarCollapsed();
 
   fetch('binas-align.json').then(r => r.json()).then(data => {
     alignMap = data.items || {};
@@ -1959,7 +1466,6 @@ document.addEventListener('DOMContentLoaded', () => {
     tabelByNr = null; // bust cache so views pick up fresh data
     renderNavigation(data, navList);
     renderTocOverview(data);
-    renderVakSelector();
 
     // Restore search
     const q = new URLSearchParams(window.location.search).get('q');
@@ -2014,66 +1520,20 @@ document.addEventListener('DOMContentLoaded', () => {
       }
   });
 
-  // Sidebar Toggles
-  // Note: sidebar-toggle button removed from header, but floating one exists?
-  // User removed sidebar-toggle from header in prompt.
-  // Floating toggle logic:
-  sidebarToggleFloating?.addEventListener('click', toggleSidebar);
-  sidebarOverlay?.addEventListener('click', () => layout.classList.add('sidebar-collapsed'));
-
-  // Icon Sidebar Tabs
-  const handleIconClick = (btn, targetView, callback) => {
-      if (btn.classList.contains('active')) {
-          // Toggle collapse if already active
-          const collapsed = layout.classList.contains('sidebar-collapsed');
-          layout.classList.toggle('sidebar-collapsed', !collapsed);
-          localStorage.setItem(sidebarCollapsedKey, String(!collapsed));
-          if (!collapsed) {
-            // We just collapsed — deactivate the button so it shows the muted color
-            btn.classList.remove('active');
-          }
-          return;
-      }
-
-      // Switch active button
-      [btnMenuToc, btnMenuFavorites, btnMenuRecent].forEach(b => b?.classList.remove('active'));
-      btn.classList.add('active');
-
-      // Switch view
-      navList.hidden = true;
-      if (favoritesView) favoritesView.hidden = true;
-      if (recentView) recentView.hidden = true;
-
-      targetView.hidden = false;
-
-      // Ensure sidebar is open
-      layout.classList.remove('sidebar-collapsed');
-      localStorage.setItem(sidebarCollapsedKey, 'false');
-
-      // Toggle Search Bar Visibility
-      // Only show search if TOC is active
-      const sidebarTop = document.querySelector('.sidebar-top');
-      if (sidebarTop) {
-          if (targetView === navList) {
-              sidebarTop.style.display = 'flex';
-          } else {
-              sidebarTop.style.display = 'none';
-          }
-      }
-
-      if (callback) callback();
-  };
-
-  btnMenuToc?.addEventListener('click', () => {
-    handleIconClick(btnMenuToc, navList);
-    setTimeout(() => navSearch?.focus(), 50);
+  sidebarToggleFloating?.addEventListener('click', () => setSidebarCollapsed(false));
+  sidebarCollapseBtn?.addEventListener('click', () => setSidebarCollapsed(true));
+  sidebarOverlay?.addEventListener('click', () => setSidebarCollapsed(true));
+  window.addEventListener('resize', () => {
+    setSidebarCollapsed(layout.classList.contains('sidebar-collapsed'));
   });
-  btnMenuFavorites?.addEventListener('click', () => handleIconClick(btnMenuFavorites, favoritesView, renderFavoritesList));
-  btnMenuRecent?.addEventListener('click', () => handleIconClick(btnMenuRecent, recentView, renderRecentView));
 
-  document.getElementById('btn-clear-recent')?.addEventListener('click', () => {
-    try { localStorage.removeItem(RECENT_KEY); } catch {}
-    renderRecentView();
+  btnMenuFavorites?.addEventListener('click', () => {
+    if (currentSidebarView === 'favorites') {
+      showSidebarView('toc');
+    } else {
+      showSidebarView('favorites');
+    }
+    setSidebarCollapsed(false);
   });
 
   // Dialog & Visibility Toggle
@@ -2109,42 +1569,17 @@ document.addEventListener('DOMContentLoaded', () => {
   // Features
   loadFavorites();
   initContextMenu();
-  initOverlays();
-  initAuth();
 
   // Hook up Add Folder Button
   document.getElementById('btn-add-folder')?.addEventListener('click', createNewFolder);
 
   openPage(1); // Default
 
-  // Apply config settings
-  applyConfig();
-
   // Autofocus the TOC search box on page load (only when sidebar is visible)
   if (!layout?.classList.contains('sidebar-collapsed')) {
     setTimeout(() => navSearch?.focus(), 100);
   }
 });
-
-// --- Config Application ---
-function applyConfig() {
-  if (!BINAS_CONFIG) return;
-  
-  // Update version and copyright in settings overlay
-  const versionElement = document.getElementById('settings-version-info');
-  if (versionElement) {
-    versionElement.innerHTML = `
-      ${BINAS_CONFIG.version}<br>
-      <small>${BINAS_CONFIG.copyright}</small>
-    `;
-  }
-
-  // Handle credit visibility
-  const footerNote = document.querySelector('.footer-note');
-  if (footerNote) {
-    footerNote.style.display = BINAS_CONFIG.showCredit ? 'block' : 'none';
-  }
-}
 
 function hideNavDialog() {
     navDialog.classList.remove('visible');
@@ -2155,9 +1590,6 @@ function hideNavDialog() {
 document.addEventListener('keydown', (e) => {
    if (e.key === 'Escape') {
        hideNavDialog();
-       // Also close any open overlays
-       if (settingsOverlay?.classList.contains('visible')) toggleOverlay(settingsOverlay, false);
-       if (accountOverlay?.classList.contains('visible')) toggleOverlay(accountOverlay, false);
    }
 });
 
@@ -2448,7 +1880,6 @@ function pushRecentItem(nr, subLetter) {
     list.unshift({ nr, sub });
     localStorage.setItem(RECENT_KEY, JSON.stringify(list.slice(0, MAX_RECENT)));
   } catch {}
-  if (recentView && !recentView.hidden) renderRecentView();
 }
 
 function highlightHtml(text, q) {
@@ -2500,23 +1931,7 @@ function renderVakSelector() {
 
 function setActiveVakCategory(id) {
   activeVakCategory = id;
-
-  // Reorder + collapse nav-list sections
   applyNavCategoryFilter();
-
-  // Tint sidebar icon accent colour to the selected category
-  const sidebar = document.querySelector('.icon-sidebar');
-  if (sidebar) {
-    if (id) {
-      const meta = VAK_META[id];
-      sidebar.style.setProperty('--primary', meta?.color || '');
-      sidebar.style.setProperty('--primary-hover', meta?.color || '');
-    } else {
-      sidebar.style.removeProperty('--primary');
-      sidebar.style.removeProperty('--primary-hover');
-    }
-  }
-
   renderVakSelector();
 }
 
