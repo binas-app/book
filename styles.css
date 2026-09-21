@@ -633,7 +633,7 @@ input.input-locked:focus {
   font-size: 20px;
   transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
 }
-.layout.sidebar-collapsed .sidebar-toggle-floating {
+.layout.sidebar-collapsed ~ .sidebar-toggle-floating {
   display: flex;
 }
 .sidebar-toggle-floating:hover {
