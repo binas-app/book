@@ -1,0 +1,40 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Primary admin check by UID
+    function isPrimaryAdmin() {
+      return request.auth != null
+        && request.auth.uid == "OqLlhR3cbZbA8qSqnNPIKGt1j1G2";
+    }
+    
+    // Check if user is any admin (primary or in admins collection)
+    function isAdmin() {
+      return isPrimaryAdmin() || 
+        (request.auth != null && exists(/databases/$(database)/documents/admins/$(request.auth.token.email)));
+    }
+
+    // Users (App Data)
+    match /users/{userId} {
+      allow read, write: if request.auth != null && request.auth.uid == userId;
+    }
+    
+    // Admins collection - anyone authenticated can read (to check admin status)
+    // Only primary admin can write (add/remove admins)
+    match /admins/{email} {
+      allow read: if request.auth != null;
+      allow write: if isPrimaryAdmin();
+    }
+
+    // Global Config - Public Read
+    match /config/global {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    // Default deny
+    match /{document=**} {
+      allow read, write: if isAdmin();
+    }
+  }
+}

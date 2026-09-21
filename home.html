@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+  <meta charset="UTF-8" />
+  <script src="gate.js"></script>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Digitale Binas - De moderne Binas viewer</title>
+  <meta name="description" content="Digitale Binas is de snelste manier om Binas tabellen te vinden en te bekijken. Met slimme zoekfuncties, favorieten en een razendsnelle inhoudsopgave." />
+  <link rel="stylesheet" href="marketing.css" />
+  <link rel="icon" type="image/png" href="favicon.png" />
+</head>
+<body>
+  <header>
+    <div class="header-inner">
+      <a href="/home" class="logo">Digitale <span>Binas</span></a>
+      <nav class="nav-links">
+        <a href="/home" class="active">Home</a>
+        <a href="/over">Over</a>
+        <a href="/hoe-werkt-het">Hoe werkt het</a>
+        <a href="/contact">Contact</a>
+      </nav>
+      <a href="/" class="btn-primary">Open App</a>
+    </div>
+  </header>
+
+  <main>
+    <section class="hero">
+      <h1>De Binas, maar dan beter.</h1>
+      <p>Zoek razendsnel door alle tabellen, bekijk de PDF in hoge kwaliteit en krijg antwoord op je vragen met AI.</p>
+      <div style="display: flex; gap: 16px; justify-content: center;">
+        <a href="/" class="btn-primary" style="font-size: 18px; padding: 16px 32px;">Start Nu</a>
+        <a href="/hoe-werkt-het" style="padding: 16px 32px; background: #fff; border: 1px solid var(--border); border-radius: 8px; font-weight: 600;">Meer info</a>
+      </div>
+    </section>
+
+    <div class="container">
+      <div class="features-grid">
+        <div class="feature-card">
+          <div class="feature-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="24" height="24"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+          </div>
+          <h3>Slim Zoeken</h3>
+          <p>Typ een trefwoord of tabelnummer en vind direct wat je zoekt. Nooit meer bladeren.</p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="24" height="24"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path></svg>
+          </div>
+          <h3>Recent bekeken</h3>
+          <p>Je laatst geopende tabellen staan altijd binnen handbereik, zodat je zo verder kunt.</p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon">
+             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="24" height="24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"></path></svg>
+          </div>
+          <h3>Favorieten</h3>
+          <p>Sla je veelgebruikte tabellen op voor snelle toegang tijdens het studeren.</p>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+      <div class="copyright" id="footer-copyright"></div>
+      <div class="footer-links">
+        <a href="/privacy">Privacy</a>
+        <a href="/terms-of-service">Voorwaarden</a>
+        <a href="/legal">Legal</a>
+        <a href="/contact">Contact</a>
+      </div>
+    </div>
+  </footer>
+  <script type="module">
+    import BINAS_CONFIG from './config.js';
+    const copyrightEl = document.getElementById('footer-copyright');
+    if (copyrightEl && BINAS_CONFIG?.copyright) {
+      copyrightEl.textContent = BINAS_CONFIG.copyright;
+    } else if (copyrightEl) {
+      copyrightEl.textContent = '© 2025 Binas.app';
+    }
+  </script>
+</body>
+</html>

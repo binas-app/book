@@ -1,0 +1,10 @@
+# Serve PDF.js ES modules with the correct MIME type on Netlify.
+[[headers]]
+  for = "/pdfjs/build/*.mjs"
+  [headers.values]
+    Content-Type = "text/javascript; charset=utf-8"
+
+[[headers]]
+  for = "/pdfjs/web/*.mjs"
+  [headers.values]
+    Content-Type = "text/javascript; charset=utf-8"

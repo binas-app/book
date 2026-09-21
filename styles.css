@@ -1,0 +1,3628 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Source+Sans+3:wght@400;600;700&display=swap');
+
+:root {
+  color-scheme: light;
+
+  /* Palette */
+  --primary: #2563eb;
+  --primary-hover: #1d4ed8;
+  --bg-body: #f1f5f9;
+  --bg-sidebar: #ffffff;
+  --border: #e2e8f0;
+  --text-main: #0f172a;
+  --text-muted: #64748b;
+
+  /* Dimensions */
+  --sidebar-width: 320px;
+
+  /* Effects */
+  --radius: 12px;
+  --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+  --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+  --transition: 0.15s ease;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+[hidden] {
+  display: none !important;
+}
+
+body {
+  margin: 0;
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  background: var(--bg-body);
+  color: var(--text-main);
+  min-height: 100vh;
+  overflow: hidden;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Layout Grid */
+.layout {
+  display: grid;
+  grid-template-columns: 56px var(--sidebar-width) 1fr;
+  height: 100vh;
+  background: #ffffff;
+  position: relative;
+}
+
+.layout.sidebar-collapsed {
+  grid-template-columns: 56px 0px 1fr;
+}
+
+/* Advanced Mode Vertical Sidebar (Icon Bar) */
+.icon-sidebar {
+  grid-column: 1;
+  background: linear-gradient(180deg, #fbfcfd 0%, #f6f8fa 100%);
+  border-right: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 14px 0 12px;
+  width: 56px;
+  z-index: 15;
+  contain: layout style;
+}
+
+.icon-sidebar-btn {
+  position: relative;
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  border: none;
+  background: transparent;
+  color: var(--text-muted);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background-color 0.18s ease, color 0.18s ease, transform 0.18s ease;
+  will-change: background-color;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.icon-sidebar-btn::before {
+  content: '';
+  position: absolute;
+  left: -8px;
+  top: 50%;
+  transform: translateY(-50%) scaleY(0);
+  width: 3px;
+  height: 22px;
+  background: var(--primary);
+  border-radius: 0 3px 3px 0;
+  transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.icon-sidebar-btn:hover {
+  background: rgba(37, 99, 235, 0.08);
+  color: var(--primary);
+}
+
+.icon-sidebar-btn:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.35);
+}
+
+.icon-sidebar-btn[data-tooltip]::after {
+  content: attr(data-tooltip);
+  position: absolute;
+  left: calc(100% + 10px);
+  top: 50%;
+  transform: translate(-4px, -50%);
+  background: #1f2937;
+  color: #fff;
+  padding: 5px 9px;
+  border-radius: 6px;
+  font-size: 11.5px;
+  font-weight: 500;
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  white-space: nowrap;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 120ms ease, transform 120ms ease;
+  z-index: 200;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.icon-sidebar-btn[data-tooltip]:hover::after {
+  opacity: 1;
+  transform: translate(0, -50%);
+}
+
+.icon-sidebar-btn:active {
+  background: rgba(37, 99, 235, 0.14);
+  transform: scale(0.96);
+}
+
+/* Active state */
+.icon-sidebar-btn.active {
+  color: var(--primary);
+  background: rgba(37, 99, 235, 0.1);
+}
+
+.icon-sidebar-btn.active::before {
+  transform: translateY(-50%) scaleY(1);
+}
+
+/* When sidebar is collapsed */
+.layout.sidebar-collapsed .icon-sidebar-btn.active {
+  background: transparent;
+}
+
+.layout.sidebar-collapsed .icon-sidebar-btn.active::before {
+  transform: translateY(-50%) scaleY(0);
+}
+
+.icon-sidebar-btn svg {
+  width: 20px;
+  height: 20px;
+  stroke-width: 2;
+}
+
+/* Sidebar */
+.sidebar {
+  background: var(--bg-sidebar);
+  border-right: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  overflow: hidden;
+  position: relative;
+  z-index: 10;
+  contain: layout style;
+}
+
+.sidebar-top {
+  padding: 14px 14px 12px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  background: var(--bg-sidebar);
+  border-bottom: 1px solid var(--border);
+  position: relative;
+  z-index: 2;
+}
+
+/* Search Header */
+.nav-header {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.search-row {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.icon-button {
+  background: #ffffff;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: var(--text-muted);
+  transition: background-color 0.15s ease, color 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease;
+  font-size: 16px;
+}
+
+.icon-button:hover {
+  background: #f8fafc;
+  color: var(--primary);
+  border-color: rgba(37, 99, 235, 0.3);
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
+}
+
+.icon-button:active {
+  background: #f1f5f9;
+  box-shadow: none;
+}
+
+.icon-button:focus-visible {
+  outline: none;
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
+}
+
+.search-box {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: #f8fafc;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 0 12px;
+  height: 40px;
+  transition: border-color 0.18s ease, background-color 0.18s ease, box-shadow 0.18s ease;
+}
+
+.search-box:focus-within {
+  background: #ffffff;
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
+}
+
+.search-box:hover:not(:focus-within) {
+  border-color: #cbd5e1;
+  background: #f1f5f9;
+}
+
+.search-box svg {
+  width: 16px;
+  height: 16px;
+  color: var(--text-muted);
+  flex-shrink: 0;
+}
+
+.search-box:focus-within svg {
+  color: var(--primary);
+}
+
+.search-box input {
+  border: none;
+  background: transparent;
+  width: 100%;
+  font-size: 14px;
+  color: var(--text-main);
+  outline: none;
+}
+
+.search-box input::placeholder {
+  color: #94a3b8;
+}
+
+.auth-form-label {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+}
+
+.auth-input-row {
+  display: flex;
+  gap: 8px;
+}
+
+.auth-input-row input {
+  flex: 1;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 6px 8px;
+  font-size: 13px;
+  outline: none;
+}
+.auth-input-row input:focus {
+  border-color: var(--primary);
+}
+
+/* Locked input state (when logged in) */
+.input-locked,
+input.input-locked {
+  background-color: #f1f5f9 !important;
+  color: var(--text-muted) !important;
+  cursor: not-allowed !important;
+  border-color: #e2e8f0 !important;
+}
+.input-locked:focus,
+input.input-locked:focus {
+  border-color: #e2e8f0 !important;
+  box-shadow: none !important;
+}
+
+/* Locked input hint */
+.input-locked-hint {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  color: var(--text-muted);
+  margin-bottom: 6px;
+  padding: 4px 8px;
+  background: #f8fafc;
+  border-radius: 4px;
+  border: 1px solid var(--border);
+}
+.input-locked-hint svg {
+  color: var(--text-muted);
+  flex-shrink: 0;
+}
+
+.primary-button {
+  background: var(--primary);
+  color: #ffffff;
+  border: none;
+  border-radius: 6px;
+  padding: 8px 12px;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+.primary-button:hover {
+  background: var(--primary-hover);
+}
+.primary-button:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.25);
+}
+.primary-button:active {
+  background: var(--primary-hover);
+  transform: translateY(1px);
+}
+
+.secondary-button {
+  background: #ffffff;
+  border: 1px solid var(--border);
+  color: var(--text-main);
+  border-radius: 6px;
+  padding: 6px 10px;
+  font-size: 12px;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s, box-shadow 0.15s;
+}
+.secondary-button:hover {
+  background: #f8fafc;
+  border-color: #cbd5e1;
+}
+.secondary-button:focus-visible {
+  outline: none;
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
+}
+.secondary-button:active {
+  background: #e2e8f0;
+}
+
+.auth-user-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: #f8fafc;
+  padding: 8px 10px;
+  border-radius: 6px;
+  border: 1px solid var(--border);
+}
+.auth-user-meta {
+  display: flex;
+  flex-direction: column;
+}
+.auth-label {
+  font-size: 10px;
+  color: var(--text-muted);
+  text-transform: uppercase;
+}
+.auth-name {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-main);
+}
+.auth-email {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text-main);
+}
+.logout-button {
+  font-size: 11px;
+  padding: 4px 8px;
+}
+
+.auth-status-message {
+  font-size: 12px;
+  color: var(--text-muted);
+}
+.auth-status-message[data-variant='error'] { color: #ef4444; }
+.auth-status-message[data-variant='success'] { color: #10b981; }
+
+/* Navigation Area */
+.nav-area {
+  flex: 1;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  contain: strict;
+}
+
+.nav-scroll {
+  flex: 1;
+  overflow-y: auto;
+  padding: 14px;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(0, 0, 0, 0.15) transparent;
+  contain: content;
+  will-change: scroll-position;
+}
+
+.nav-scroll::-webkit-scrollbar {
+  width: 6px;
+}
+
+.nav-scroll::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.nav-scroll::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.15);
+  border-radius: 3px;
+}
+
+.nav-scroll::-webkit-scrollbar-thumb:hover {
+  background: rgba(0, 0, 0, 0.25);
+}
+
+.nav-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.nav-section {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.nav-section-heading {
+  position: sticky;
+  top: 0;
+  background: var(--section-color);
+  padding: 9px 12px;
+  font-size: 14px;
+  font-weight: 600;
+  text-transform: none;
+  letter-spacing: 0;
+  color: #ffffff;
+  border: none;
+  border-radius: 8px;
+  text-align: left;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
+  z-index: 1;
+  margin-bottom: 0;
+  margin-top: 0;
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.06), inset 0 1px 0 rgba(255, 255, 255, 0.12);
+  transition: filter 0.15s ease, transform 0.1s ease;
+}
+
+.nav-section-heading:hover {
+  filter: brightness(1.06);
+}
+
+.nav-section-heading:active {
+  filter: brightness(0.96);
+  transform: translateY(1px);
+}
+
+.nav-section-arrow {
+  display: inline-flex;
+  transition: transform 0.15s ease;
+  transform: rotate(90deg);
+  font-size: 14px;
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.nav-section.is-collapsed .nav-section-arrow {
+  transform: rotate(0deg);
+}
+
+.nav-section.is-collapsed .nav-section-list {
+  display: none;
+}
+
+.nav-section-list {
+  list-style: none;
+  padding: 4px 0 2px 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.nav-item {
+  display: flex;
+  flex-direction: column;
+}
+
+.nav-link {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  width: 100%;
+  padding: 5px 12px;
+  border: none;
+  background: transparent;
+  border-radius: 6px;
+  text-align: left;
+  cursor: pointer;
+  color: var(--text-main);
+  transition: background-color 0.12s ease, color 0.12s ease;
+}
+
+.nav-link:hover {
+  background: #f1f5f9;
+}
+
+.nav-link:active {
+  background: #e2e8f0;
+}
+
+.nav-link:focus-visible {
+  outline: none;
+  background: #f1f5f9;
+  box-shadow: inset 0 0 0 2px rgba(37, 99, 235, 0.25);
+}
+
+/* Search empty state */
+.nav-empty-state {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  gap: 4px;
+  padding: 32px 20px;
+  color: var(--text-muted);
+  background: #f8fafc;
+  border: 1px dashed var(--border);
+  border-radius: 10px;
+  margin: 4px 0;
+}
+
+.nav-empty-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: #f1f5f9;
+  color: var(--text-muted);
+  margin-bottom: 8px;
+}
+
+.nav-empty-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-main);
+}
+
+.nav-empty-sub {
+  font-size: 12px;
+  color: var(--text-muted);
+  word-break: break-word;
+  max-width: 100%;
+}
+
+.nav-label {
+  min-width: 22px;
+  height: auto;
+  border-radius: 0;
+  background: transparent;
+  color: var(--section-color);
+  font-size: 14px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  flex-shrink: 0;
+  margin-top: 0;
+}
+
+.nav-title {
+  font-size: 14px;
+  line-height: 1.4;
+  font-weight: 400;
+  color: var(--text-main);
+}
+
+.nav-title mark { background: #FFE680; color: inherit; border-radius: 2px; padding: 0 1px; }
+
+.nav-link:hover .nav-title {
+  color: #000000;
+}
+
+/* Subtables */
+.nav-sublist {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  position: relative;
+}
+
+.nav-link.is-subtable {
+  padding-left: 12px;
+}
+
+.nav-link.is-subtable .nav-label {
+  background: transparent;
+  color: #000000;
+  font-weight: 700;
+  min-width: 20px;
+  justify-content: flex-end;
+  margin-left: 12px;
+}
+
+.nav-link.is-subtable .nav-title {
+  font-size: 14px;
+  font-weight: 400;
+  font-style: italic;
+  color: #000000;
+}
+
+.nav-link.is-subtable:hover .nav-title {
+  color: #000000;
+}
+
+/* Theme Colors */
+.nav-section[data-theme='algemeen'], .nav-item[data-theme='algemeen'] { --section-color: #c94195; }
+.nav-section[data-theme='natuurkunde'], .nav-item[data-theme='natuurkunde'] { --section-color: #0163ac; }
+.nav-section[data-theme='wiskunde'], .nav-item[data-theme='wiskunde'] { --section-color: #a0341a; }
+.nav-section[data-theme='scheikunde'], .nav-item[data-theme='scheikunde'] { --section-color: #ff3b2d; }
+.nav-section[data-theme='biologie'], .nav-item[data-theme='biologie'] { --section-color: #2c9a44; }
+.nav-section[data-theme='register'], .nav-item[data-theme='register'] { --section-color: #aa9b88; }
+
+.nav-item[data-theme] .nav-label {
+  color: var(--section-color);
+  font-weight: 700;
+}
+
+/* Viewer Area */
+.viewer {
+  background: #ffffff;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  z-index: 1;
+}
+
+.viewer-area {
+  flex: 1;
+  background: #111827; /* Dark background for PDF viewer */
+  display: flex;
+  position: relative;
+}
+
+.viewer-frame-wrapper {
+  flex: 1;
+  position: relative;
+}
+.viewer-frame-wrapper iframe {
+  width: 100%;
+  height: 100%;
+  border: none;
+}
+
+/* Floating Toggles */
+.sidebar-toggle-floating {
+  position: fixed;
+  left: 20px;
+  bottom: 20px;
+  z-index: 20;
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: var(--primary);
+  color: #fff;
+  border: none;
+  box-shadow: 0 6px 16px rgba(37, 99, 235, 0.32), 0 2px 4px rgba(37, 99, 235, 0.2);
+  cursor: pointer;
+  display: none; /* Only show when collapsed */
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+  transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+}
+.sidebar-toggle-floating:hover {
+  transform: scale(1.06);
+  background: var(--primary-hover);
+  box-shadow: 0 8px 22px rgba(37, 99, 235, 0.4), 0 3px 6px rgba(37, 99, 235, 0.24);
+}
+.sidebar-toggle-floating:active {
+  transform: scale(0.98);
+}
+.sidebar-toggle-floating.visible {
+  display: flex;
+}
+
+
+/* Dialogs & Overlays */
+.sidebar-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.3);
+  backdrop-filter: blur(2px);
+  -webkit-backdrop-filter: blur(2px);
+  z-index: 9;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.15s ease;
+}
+.sidebar-overlay.visible {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.nav-dialog {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  z-index: 40;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.15s ease, visibility 0.15s ease;
+  will-change: opacity;
+}
+
+.nav-dialog.visible {
+  opacity: 1;
+  visibility: visible;
+}
+
+.nav-dialog-content,
+.overlay-small {
+  transform: scale(0.9);
+  opacity: 0;
+  transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.15s ease;
+  will-change: transform, opacity;
+}
+
+.nav-dialog.visible .nav-dialog-content,
+.nav-dialog.visible .overlay-small {
+  transform: scale(1);
+  opacity: 1;
+}
+
+.nav-dialog-content {
+  background: #ffffff;
+  width: min(800px, 92vw);
+  height: min(80vh, 800px);
+  border-radius: 12px;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+  overflow: hidden;
+}
+
+.nav-dialog-header {
+  padding: 16px;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.nav-dialog-title-group {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.nav-dialog-title {
+  font-size: 18px;
+  font-weight: 700;
+}
+
+.nav-dialog-toggle {
+  background: #f1f5f9;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 6px 12px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  color: var(--text-muted);
+  transition: all 0.15s;
+}
+
+.nav-dialog-toggle:hover {
+  background: #e2e8f0;
+  color: var(--text-main);
+}
+
+.nav-dialog-toggle[aria-pressed="true"] {
+  background: var(--primary);
+  color: #fff;
+  border-color: var(--primary);
+}
+
+.nav-dialog-close {
+  background: none;
+  border: none;
+  font-size: 24px;
+  cursor: pointer;
+  color: var(--text-muted);
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.15s, color 0.15s;
+}
+
+.nav-dialog-close:hover {
+  color: var(--text-main);
+  background: #f1f5f9;
+}
+
+.nav-dialog-close:focus-visible {
+  outline: none;
+  background: #f1f5f9;
+  color: var(--text-main);
+  box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.35);
+}
+
+/* =====================================================================
+   Fullscreen table of contents (⤢ button)
+
+   A book-style index over the whole Binas: subject blocks in flowing
+   columns, tables numbered in the subject colour, sub-tables lettered
+   underneath. Self-contained — it shares no styling with the sidebar list.
+   ===================================================================== */
+
+.toc-overlay {
+  position: absolute;
+  inset: 0;
+  background: #ffffff;
+  font-family: 'Source Sans 3', 'Inter', -apple-system, Helvetica, sans-serif;
+  color: #12181f;
+  -webkit-font-smoothing: antialiased;
+  opacity: 0;
+  transform: translateY(10px);
+  transition: transform 0.2s ease, opacity 0.15s ease;
+}
+
+.nav-dialog.visible .toc-overlay {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.toc-scroll {
+  height: 100%;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+
+/* ── Sticky top bar ────────────────────────────── */
+
+.toc-topbar {
+  position: sticky;
+  top: 0;
+  z-index: 5;
+  background: rgba(255, 255, 255, 0.92);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border-bottom: 1px solid #e6e9ed;
+}
+
+.toc-topbar-row {
+  max-width: 1680px;
+  margin: 0 auto;
+  padding: 18px 32px 0;
+  display: flex;
+  align-items: center;
+  gap: 32px;
+}
+
+.toc-brand {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+  flex: 0 0 auto;
+}
+
+.toc-title {
+  margin: 0;
+  font-size: 22px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+
+.toc-subtitle {
+  font-size: 14px;
+  color: #8a939d;
+}
+
+.toc-search-wrap {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+}
+
+.toc-search {
+  position: relative;
+  width: 100%;
+  max-width: 520px;
+}
+
+.toc-search-icon {
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #98a1ab;
+  font-size: 14px;
+  pointer-events: none;
+}
+
+.toc-search input {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 9px 12px 9px 30px;
+  font: inherit;
+  font-size: 14px;
+  border: 1px solid #dfe3e8;
+  border-radius: 8px;
+  background: #fafbfc;
+  outline: none;
+  color: #12181f;
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+.toc-search input::-webkit-search-cancel-button,
+.toc-search input::-webkit-search-decoration {
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+.toc-close {
+  flex: 0 0 auto;
+  width: 32px;
+  height: 32px;
+  border: 1px solid #e6e9ed;
+  border-radius: 8px;
+  background: #ffffff;
+  color: #6b7480;
+  font-size: 15px;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.toc-close:hover {
+  background: #f4f6f8;
+  color: #12181f;
+}
+
+/* ── Subject jump bar ──────────────────────────── */
+
+.toc-jumpbar {
+  max-width: 1680px;
+  margin: 0 auto;
+  padding: 10px 32px;
+  display: flex;
+  gap: 4px;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.toc-jumpbar::-webkit-scrollbar {
+  display: none;
+}
+
+.toc-jump {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  flex: 0 0 auto;
+  padding: 5px 10px;
+  border: none;
+  border-radius: 6px;
+  background: none;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  color: #4a535e;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.toc-jump:hover {
+  background: #eef1f4;
+}
+
+.toc-jump-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 2px;
+}
+
+.toc-jump-count {
+  color: #a6aeb8;
+  font-weight: 400;
+}
+
+/* ── Sections ──────────────────────────────────── */
+
+.toc-main {
+  max-width: 1680px;
+  margin: 0 auto;
+  width: 100%;
+  box-sizing: border-box;
+  padding: 8px 32px 64px;
+}
+
+.toc-section {
+  padding-top: 26px;
+}
+
+.toc-section-head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding-bottom: 10px;
+  border-bottom: 2px solid var(--toc-color);
+}
+
+.toc-section-title {
+  margin: 0;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  color: var(--toc-color);
+}
+
+.toc-section-range {
+  font-size: 12px;
+  color: #a6aeb8;
+}
+
+.toc-columns {
+  columns: 4;
+  column-gap: 44px;
+  padding-top: 8px;
+}
+
+.toc-entry {
+  break-inside: avoid;
+  -webkit-column-break-inside: avoid;
+  padding: 2px 0;
+}
+
+/* ── Rows ──────────────────────────────────────── */
+
+.toc-row {
+  display: flex;
+  gap: 10px;
+  align-items: baseline;
+  padding: 4px 8px;
+  border-radius: 5px;
+  color: #12181f;
+  text-decoration: none;
+}
+
+.toc-row:hover,
+.toc-row:focus-visible {
+  outline: none;
+  background: #f4f6f8;
+}
+
+.toc-row-nr {
+  flex: 0 0 26px;
+  text-align: right;
+  font-size: 13px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  color: var(--toc-color);
+}
+
+.toc-row-title {
+  flex: 1;
+  font-size: 14.5px;
+  line-height: 1.35;
+  text-wrap: pretty;
+}
+
+.toc-row-page {
+  flex: 0 0 auto;
+  font-size: 11.5px;
+  font-variant-numeric: tabular-nums;
+  color: #b3bac2;
+}
+
+.toc-sub {
+  display: flex;
+  gap: 10px;
+  align-items: baseline;
+  padding: 2.5px 8px 2.5px 44px;
+  border-radius: 5px;
+  color: #3d4650;
+  text-decoration: none;
+}
+
+.toc-sub:hover,
+.toc-sub:focus-visible {
+  outline: none;
+  background: #f4f6f8;
+}
+
+.toc-sub-letter {
+  flex: 0 0 11px;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--toc-color);
+}
+
+.toc-sub-title {
+  font-size: 13.5px;
+  line-height: 1.3;
+  text-wrap: pretty;
+}
+
+.toc-row mark,
+.toc-sub mark {
+  background: #ffe680;
+  color: inherit;
+  border-radius: 2px;
+  padding: 0 1px;
+}
+
+.toc-empty {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 80px 0;
+  text-align: center;
+}
+
+.toc-empty-title {
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.toc-empty-sub {
+  font-size: 13px;
+  color: #8a939d;
+}
+
+/* The design is drawn at 1680px; step the columns down so rows never get
+   too narrow to read on smaller screens. */
+@media (max-width: 1300px) {
+  .toc-columns { columns: 3; column-gap: 36px; }
+}
+
+@media (max-width: 900px) {
+  .toc-columns { columns: 2; column-gap: 28px; }
+  .toc-topbar-row,
+  .toc-jumpbar,
+  .toc-main { padding-left: 20px; padding-right: 20px; }
+}
+
+@media (max-width: 640px) {
+  .toc-columns { columns: 1; }
+  .toc-topbar-row { flex-wrap: wrap; gap: 12px; padding-top: 14px; }
+  .toc-search-wrap { order: 3; flex-basis: 100%; }
+  .toc-brand { flex: 1; }
+  .toc-subtitle { display: none; }
+  .toc-section { scroll-margin-top: 140px; }
+}
+
+.footer-note {
+  position: fixed;
+  bottom: 16px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: #111827;
+  color: #fff;
+  padding: 8px 16px;
+  border-radius: 20px;
+  font-size: 12px;
+  z-index: 5;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+  pointer-events: none;
+}
+
+/* Debug Log (Hidden mostly) */
+.debug-log {
+  font-family: monospace;
+  font-size: 10px;
+  background: #f1f5f9;
+  padding: 8px;
+  border-radius: 4px;
+  max-height: 100px;
+  overflow: auto;
+}
+
+/* Responsive */
+@media (max-width: 1100px) {
+  .layout {
+    grid-template-columns: 56px var(--sidebar-width) 1fr;
+  }
+
+}
+
+@media (max-width: 900px) {
+  :root {
+    --sidebar-width: 280px;
+  }
+
+  .layout {
+    grid-template-columns: 56px 1fr;
+  }
+
+  .layout.sidebar-collapsed {
+    grid-template-columns: 56px 1fr;
+  }
+
+  .sidebar {
+    position: fixed;
+    left: 56px;
+    top: 0;
+    bottom: 0;
+    width: var(--sidebar-width);
+    box-shadow: 4px 0 16px rgba(0,0,0,0.08);
+    transform: translateX(0);
+    transition: transform 0.2s ease;
+    z-index: 30;
+    will-change: transform;
+  }
+
+  .layout.sidebar-collapsed .sidebar {
+    transform: translateX(-120%);
+    box-shadow: none;
+  }
+
+  .viewer {
+    grid-column: 2;
+  }
+
+
+  /* Slightly smaller buttons on mobile */
+  .icon-sidebar-btn {
+    width: 36px;
+    height: 36px;
+  }
+  
+  .icon-sidebar-btn svg {
+    width: 18px;
+    height: 18px;
+  }
+}
+
+/* Icon Sidebar Updates */
+.icon-sidebar-top, .icon-sidebar-bottom {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+  gap: 6px;
+}
+
+.icon-sidebar-spacer {
+  flex: 1;
+}
+
+.icon-sidebar-divider {
+  width: 24px;
+  height: 1px;
+  background: linear-gradient(90deg, transparent 0%, var(--border) 50%, transparent 100%);
+  margin: 10px 0 6px;
+}
+
+.account-btn {
+  padding: 0;
+  overflow: hidden;
+}
+
+.account-circle {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 100%);
+  border: 2px solid transparent;
+  box-shadow: inset 0 0 0 1px rgba(15, 23, 42, 0.04);
+  transition: background 0.18s ease, border-color 0.18s ease, box-shadow 0.18s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-muted);
+  overflow: hidden;
+}
+
+/* Google profile photo in account circle */
+.account-photo {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 50%;
+}
+
+.account-btn:hover .account-circle {
+  background: linear-gradient(135deg, #e2e8f0 0%, #cbd5e1 100%);
+  border-color: rgba(37, 99, 235, 0.2);
+}
+
+/* Overlays */
+.overlay-small {
+  width: min(400px, 90vw);
+  height: auto;
+  max-height: 80vh;
+}
+
+.overlay-body {
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  overflow-y: auto;
+}
+
+.overlay-section {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.overlay-desc {
+  font-size: 12px;
+  color: var(--text-muted);
+  margin: 0;
+}
+
+.benefits-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  font-size: 13px;
+}
+
+/* Context Menu */
+.context-menu {
+  position: fixed;
+  background: #ffffff;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.12), 0 0 1px rgba(0, 0, 0, 0.1);
+  z-index: 100;
+  padding: 6px;
+  min-width: 180px;
+}
+
+.context-menu-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 10px 12px;
+  text-align: left;
+  background: transparent;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-main);
+}
+
+.context-menu-item:hover {
+  background: rgba(37, 99, 235, 0.08);
+  color: var(--primary);
+}
+
+.context-menu-item:active {
+  background: rgba(37, 99, 235, 0.12);
+}
+
+/* Favorites View */
+.favorites-view {
+  display: block;
+}
+
+.favorites-header {
+  position: sticky;
+  top: -14px;
+  margin: -14px -14px 0;
+  padding: 14px 14px 12px 14px;
+  border-bottom: 1px solid var(--border);
+  background: #fff;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.favorites-title {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-main);
+  letter-spacing: -0.01em;
+}
+
+
+/* Split Labels */
+.label-part-num {
+  font-weight: 700;
+  color: var(--section-color);
+}
+.label-part-suffix {
+  font-weight: 700;
+  color: #000000; /* Black for the letter */
+}
+
+/* Toast Notifications */
+.binas-toast {
+  position: fixed;
+  top: 20px;
+  left: 50%;
+  transform: translateX(-50%) translateY(-100px);
+  background: #ffffff;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 12px 16px;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
+  z-index: 10000;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  max-width: min(400px, 90vw);
+  opacity: 0;
+  transition: transform 0.2s ease, opacity 0.2s ease;
+  will-change: transform, opacity;
+}
+
+.binas-toast--visible {
+  transform: translateX(-50%) translateY(0);
+  opacity: 1;
+}
+
+.binas-toast--hiding {
+  transform: translateX(-50%) translateY(-20px);
+  opacity: 0;
+}
+
+.binas-toast__content {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex: 1;
+}
+
+.binas-toast__icon {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+.binas-toast--success .binas-toast__icon {
+  background: #dcfce7;
+  color: #16a34a;
+}
+
+.binas-toast--error .binas-toast__icon {
+  background: #fee2e2;
+  color: #dc2626;
+}
+
+.binas-toast--info .binas-toast__icon {
+  background: #dbeafe;
+  color: #2563eb;
+}
+
+.binas-toast__message {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text-main);
+  line-height: 1.4;
+}
+
+.binas-toast__close {
+  background: transparent;
+  border: none;
+  font-size: 20px;
+  color: var(--text-muted);
+  cursor: pointer;
+  padding: 0;
+  width: 26px;
+  height: 26px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 6px;
+  transition: background 0.15s, color 0.15s;
+}
+
+.binas-toast__close:hover {
+  background: #f1f5f9;
+  color: var(--text-main);
+}
+
+.binas-toast__close:focus-visible {
+  outline: none;
+  background: #f1f5f9;
+  color: var(--text-main);
+  box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.35);
+}
+
+/* Confirmation Dialog */
+.binas-confirm-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  z-index: 10000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transition: opacity 0.15s ease;
+}
+
+.binas-confirm-overlay--visible {
+  opacity: 1;
+}
+
+.binas-confirm-dialog {
+  background: #ffffff;
+  border-radius: 16px;
+  padding: 24px;
+  max-width: min(420px, 90vw);
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2);
+  transform: scale(0.95);
+  transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.binas-confirm-overlay--visible .binas-confirm-dialog {
+  transform: scale(1);
+}
+
+.binas-confirm-title {
+  margin: 0 0 12px 0;
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--text-main);
+}
+
+.binas-confirm-text {
+  margin: 0 0 16px 0;
+  font-size: 14px;
+  color: var(--text-muted);
+  line-height: 1.5;
+}
+
+.binas-confirm-options {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 20px;
+}
+
+.binas-confirm-option {
+  font-size: 13px;
+  color: var(--text-main);
+  padding: 8px 12px;
+  background: #f8fafc;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+}
+
+.binas-confirm-buttons {
+  display: flex;
+  gap: 8px;
+  justify-content: flex-end;
+}
+
+.binas-confirm-btn {
+  padding: 10px 20px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.binas-confirm-btn--cancel {
+  background: #f1f5f9;
+  border: 1px solid var(--border);
+  color: var(--text-main);
+}
+
+.binas-confirm-btn--cancel:hover {
+  background: #e2e8f0;
+}
+
+.binas-confirm-btn--confirm {
+  background: var(--primary);
+  border: 1px solid var(--primary);
+  color: #ffffff;
+}
+
+.binas-confirm-btn--confirm:hover {
+  background: var(--primary-hover);
+}
+
+/* Favorites View Enhancements */
+.favorites-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+/* Folder Styles */
+.folder-container {
+  display: flex;
+  flex-direction: column;
+  background: transparent;
+  border-radius: 8px;
+}
+
+.folder-header {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  padding: 8px 12px;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  border-radius: 8px;
+  transition: background 0.15s ease;
+  position: relative;
+  gap: 8px;
+}
+
+.folder-header:hover {
+  background: #f1f5f9;
+}
+
+.folder-arrow {
+  width: 20px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-muted);
+  transition: transform 0.2s ease;
+  transform: rotate(90deg);
+}
+
+.folder-container.collapsed .folder-arrow {
+  transform: rotate(0deg);
+}
+
+.folder-color-indicator {
+  width: 14px;
+  height: 14px;
+  border-radius: 4px;
+  background-color: var(--text-muted);
+  flex-shrink: 0;
+  cursor: pointer;
+  transition: transform 0.15s, box-shadow 0.15s;
+  border: 2px solid rgba(255, 255, 255, 0.5);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.folder-color-indicator:hover {
+  transform: scale(1.15);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+}
+
+.folder-name {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-main);
+  flex: 1;
+  text-align: left;
+}
+
+.folder-items {
+  display: flex;
+  flex-direction: column;
+  padding-left: 12px; /* Indentation */
+  gap: 0;
+}
+
+.folder-container.collapsed .folder-items {
+  display: none;
+}
+
+/* Item Styles Enhancements */
+.nav-item-content {
+  display: flex;
+  align-items: center;
+  width: 100%;
+}
+
+.note-indicator {
+  margin-left: 6px;
+  color: #f59e0b;
+  font-size: 12px;
+  cursor: help;
+  position: relative;
+}
+
+.note-indicator::after {
+  content: attr(title);
+  position: absolute;
+  bottom: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  background: #1e293b;
+  color: #ffffff;
+  padding: 8px 12px;
+  border-radius: 8px;
+  font-size: 12px;
+  white-space: pre-wrap;
+  max-width: 200px;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.15s, visibility 0.15s;
+  z-index: 100;
+  pointer-events: none;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.note-indicator:hover::after {
+  opacity: 1;
+  visibility: visible;
+}
+
+.item-actions {
+  display: flex;
+  align-items: center;
+  padding-right: 12px;
+  gap: 4px;
+}
+
+.action-btn {
+  background: transparent;
+  border: none;
+  color: var(--text-muted);
+  padding: 6px;
+  border-radius: 6px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.1s, color 0.1s;
+}
+
+.action-btn:hover {
+  background: rgba(0,0,0,0.05);
+  color: var(--text-main);
+}
+
+.action-btn svg {
+  width: 16px;
+  height: 16px;
+}
+
+/* Drag and Drop. Avoid `transform` on the source LI: some browsers cancel
+   the drag operation when the source's box transforms during dragstart. */
+.dragging {
+  opacity: 0.5;
+  background: #f1f5f9;
+  transition: opacity 0.15s, background 0.15s;
+}
+
+.drag-over {
+  background: rgba(37, 99, 235, 0.08) !important;
+  border-radius: 8px;
+  box-shadow: inset 0 0 0 2px var(--primary);
+  position: relative;
+}
+
+.drag-over::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 8px;
+  background: linear-gradient(135deg, rgba(37, 99, 235, 0.05), rgba(37, 99, 235, 0.12));
+  pointer-events: none;
+}
+
+/* Folder drop zone highlight */
+.folder-items.drag-over {
+  min-height: 40px;
+  background: rgba(37, 99, 235, 0.06) !important;
+  border: 2px dashed var(--primary);
+  border-radius: 8px;
+  margin: 4px 0;
+}
+
+/* Drag handle */
+.drag-handle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 100%;
+  color: var(--text-muted);
+  cursor: grab;
+  opacity: 0.4;
+  transition: opacity 0.15s, color 0.15s;
+  font-size: 12px;
+  letter-spacing: -2px;
+  user-select: none;
+}
+
+.nav-item-content:hover .drag-handle {
+  opacity: 0.8;
+}
+
+.drag-handle:hover {
+  opacity: 1 !important;
+  color: var(--primary);
+}
+
+.drag-handle:active {
+  cursor: grabbing;
+}
+
+/* Drag handle cursor on entire item */
+.nav-item[draggable="true"] {
+  cursor: grab;
+}
+
+.nav-item[draggable="true"]:active {
+  cursor: grabbing;
+}
+
+/* Empty folder placeholder */
+.folder-empty-placeholder {
+  pointer-events: auto;
+}
+
+/* Highlight folder items when dragging */
+body.is-dragging-favorite .folder-items {
+  min-height: 30px;
+}
+
+/* Color Picker Dialog */
+.color-picker-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  padding: 12px;
+  justify-content: center;
+  background: #f8fafc;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+}
+
+.color-option {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  border: 3px solid transparent;
+  cursor: pointer;
+  transition: transform 0.15s, border-color 0.15s, box-shadow 0.15s;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.color-option:hover {
+  transform: scale(1.1);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+
+.color-option.selected {
+  border-color: var(--text-main);
+  box-shadow: 0 0 0 2px rgba(0, 0, 0, 0.1);
+}
+
+/* Note Textarea */
+.binas-note-textarea {
+  width: 100%;
+  min-height: 100px;
+  padding: 12px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  font-size: 14px;
+  font-family: inherit;
+  resize: vertical;
+  margin-bottom: 16px;
+  outline: none;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.binas-note-textarea:focus {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.1);
+}
+
+.binas-note-textarea::placeholder {
+  color: var(--text-muted);
+}
+
+/* ===== Inline favorite star button on navigation items ===== */
+.nav-item-row {
+  display: flex;
+  align-items: stretch;
+  width: 100%;
+  position: relative;
+}
+
+.nav-item-row > .nav-link {
+  flex: 1;
+  min-width: 0;
+}
+
+.nav-fav-star {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 0 6px;
+  color: var(--text-muted);
+  opacity: 0;
+  transition: opacity 0.15s ease, color 0.15s ease, transform 0.15s ease;
+  border-radius: 6px;
+  flex-shrink: 0;
+}
+
+.nav-fav-star svg {
+  width: 16px;
+  height: 16px;
+  stroke-width: 2;
+  fill: none;
+}
+
+.nav-item-row:hover .nav-fav-star,
+.nav-fav-star:focus-visible {
+  opacity: 0.8;
+}
+
+.nav-fav-star:hover {
+  opacity: 1;
+  color: #f59e0b;
+  transform: scale(1.08);
+}
+
+.nav-fav-star.is-active {
+  opacity: 1;
+  color: #f59e0b;
+}
+
+.nav-fav-star.is-active svg {
+  fill: #f59e0b;
+  stroke: #f59e0b;
+}
+
+@media (max-width: 720px) {
+  .nav-fav-star { opacity: 0.6; }
+}
+
+/* ===== Favorites empty state ===== */
+.fav-empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: 32px 20px;
+  list-style: none;
+  color: var(--text-muted);
+}
+
+.fav-empty-icon {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #d97706;
+  margin-bottom: 14px;
+}
+
+.fav-empty-icon svg {
+  width: 28px;
+  height: 28px;
+  stroke-width: 2;
+  fill: #f59e0b;
+  stroke: #f59e0b;
+}
+
+.fav-empty-title {
+  margin: 0 0 6px 0;
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--text-main);
+}
+
+.fav-empty-text {
+  margin: 0 0 16px 0;
+  font-size: 13px;
+  line-height: 1.5;
+  max-width: 260px;
+}
+
+.fav-empty-actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.fav-empty-actions .primary-button,
+.fav-empty-actions .secondary-button {
+  padding: 8px 14px;
+  font-size: 13px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 600;
+  border: 1px solid var(--border);
+}
+
+.fav-empty-actions .primary-button {
+  background: var(--primary);
+  color: #fff;
+  border-color: var(--primary);
+}
+
+.fav-empty-actions .secondary-button {
+  background: #ffffff;
+  color: var(--text-main);
+}
+
+.fav-empty-actions .primary-button:hover { filter: brightness(1.05); }
+.fav-empty-actions .secondary-button:hover { background: #f1f5f9; }
+
+.fav-empty-hint {
+  margin: 14px 0 0 0;
+  padding-top: 12px;
+  border-top: 1px solid var(--border);
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--text-muted);
+  max-width: 260px;
+  width: 100%;
+  text-align: center;
+}
+
+/* ===== Favorites list — compact, neatly aligned ===== */
+
+/* Override the generic .nav-list gap (16px) inside the favorites view so
+   items sit close together instead of breathing like top-level sections. */
+.favorites-view .nav-list,
+#favorites-list {
+  gap: 0;
+}
+
+/* Nodes themselves: no extra outer spacing between rows. */
+.favorites-view .fav-node {
+  margin: 0;
+  position: relative;
+}
+
+/* Row container — uniform vertical rhythm independent of single- vs multi-line
+   titles. Top-align so the label number sits on the first line of the title.
+   Position relative so we can absolutely overlay the drag handle and the
+   overflow (⋯) button on top of the row instead of letting them eat layout
+   width. The result: the title gets the full available width. */
+.favorites-view .nav-item-content {
+  position: relative;
+  align-items: flex-start;
+  padding: 0;
+  min-height: 30px;
+}
+
+/* The row's main click target. Compact padding, consistent line-height.
+   Reserve a few px on the right so the (absolutely positioned) overflow
+   button has room to fade in without overlapping the title. */
+.favorites-view .nav-link {
+  padding: 5px 24px 5px 6px;
+  align-items: flex-start;
+  gap: 8px;
+  line-height: 1.35;
+  border-radius: 6px;
+  flex: 1;
+  min-width: 0;
+}
+
+/* Fixed-width label column so every title starts at the same x, regardless
+   of whether the label is "1", "10" or "10A". tabular-nums keeps digits
+   from drifting. */
+.favorites-view .nav-label {
+  width: 22px;
+  min-width: 22px;
+  flex-shrink: 0;
+  justify-content: flex-end;
+  font-variant-numeric: tabular-nums;
+  font-size: 14px;
+  line-height: 1.35;
+}
+
+.favorites-view .nav-text {
+  flex: 1;
+  min-width: 0;
+}
+
+.favorites-view .nav-title {
+  display: block;
+  font-size: 14px;
+  line-height: 1.35;
+  word-break: break-word;
+}
+
+/* Drag handle — purely a visual hint. The whole row is `draggable=true`,
+   so users can drag from anywhere; the handle no longer needs to occupy
+   layout space. Absolutely positioned so it doesn't push the title. */
+.favorites-view .drag-handle {
+  position: absolute;
+  left: -10px;
+  top: 4px;
+  width: 12px;
+  height: 22px;
+  margin: 0;
+  padding: 0;
+  opacity: 0;
+  font-size: 10px;
+  letter-spacing: -2px;
+  pointer-events: auto;
+  transition: opacity 0.15s ease;
+}
+
+.favorites-view .nav-item-content:hover .drag-handle {
+  opacity: 0.35;
+}
+
+.favorites-view .drag-handle:hover {
+  opacity: 1 !important;
+  color: var(--primary);
+}
+
+/* Overflow (⋯) menu — absolutely positioned so it overlaps the right edge
+   of the row instead of taking layout space. Fades in on row hover. */
+.favorites-view .fav-more-btn {
+  position: absolute;
+  top: 1px;
+  right: 0;
+  margin: 0;
+  padding: 4px;
+  opacity: 0;
+}
+
+.favorites-view .nav-item-content:hover .fav-more-btn,
+.favorites-view .fav-more-btn:focus-visible,
+.favorites-view .fav-more-btn[aria-expanded="true"] {
+  opacity: 1;
+}
+
+/* Folder items: tighten the indent now that the drag handle no longer
+   reserves width. */
+.favorites-view .folder-items {
+  padding-left: 14px;
+  gap: 0;
+}
+
+/* The empty-folder placeholder shouldn't add as much vertical room. */
+.favorites-view .folder-empty-placeholder {
+  padding: 4px 6px;
+  font-size: 12px;
+}
+
+/* Folder header itself: tighten the inner padding so the folder block
+   has the same rhythm as the items inside it. */
+.favorites-view .folder-header {
+  padding: 6px 24px 6px 4px;
+  position: relative;
+}
+
+.favorites-view .folder-header .fav-more-btn {
+  top: 4px;
+  right: 0;
+}
+
+/* ===== Folder enhancements ===== */
+.folder-container {
+  --folder-color: var(--primary);
+}
+
+.folder-name-wrap {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 1;
+  min-width: 0;
+}
+
+.folder-count {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-muted);
+  background: rgba(0, 0, 0, 0.05);
+  padding: 2px 8px;
+  border-radius: 999px;
+  flex-shrink: 0;
+}
+
+.folder-color-indicator {
+  border: 2px solid rgba(255, 255, 255, 0.6);
+  padding: 0;
+}
+
+.folder-color-indicator:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+}
+
+.folder-empty-placeholder {
+  list-style: none;
+  padding: 8px 12px;
+  font-size: 12px;
+  color: var(--text-muted);
+  font-style: italic;
+}
+
+/* ===== Overflow menu trigger button ===== */
+.fav-more-btn {
+  opacity: 0;
+  transition: opacity 0.15s ease, background 0.15s ease;
+  margin-right: 4px;
+}
+
+.fav-more-btn svg {
+  width: 18px;
+  height: 18px;
+}
+
+.nav-item-content:hover .fav-more-btn,
+.folder-header:hover .fav-more-btn,
+.fav-more-btn:focus-visible,
+.fav-more-btn[aria-expanded="true"] {
+  opacity: 1;
+}
+
+@media (max-width: 720px) {
+  .fav-more-btn { opacity: 0.7; }
+}
+
+/* ===== Floating action menu (item / folder) ===== */
+.fav-action-menu {
+  position: fixed;
+  z-index: 5000;
+  background: #ffffff;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  box-shadow: 0 8px 24px rgba(15, 23, 42, 0.15);
+  padding: 4px;
+  min-width: 200px;
+  display: flex;
+  flex-direction: column;
+  animation: favMenuIn 0.12s ease;
+}
+
+@keyframes favMenuIn {
+  from { opacity: 0; transform: translateY(-4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.fav-action-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: transparent;
+  border: none;
+  padding: 8px 10px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 13px;
+  color: var(--text-main);
+  text-align: left;
+  transition: background 0.1s;
+}
+
+.fav-action-item:hover {
+  background: #f1f5f9;
+}
+
+.fav-action-item:focus-visible {
+  background: #f1f5f9;
+  outline: 2px solid var(--primary);
+  outline-offset: -2px;
+}
+
+.fav-action-item.is-danger {
+  color: #b91c1c;
+}
+
+.fav-action-item.is-danger:hover {
+  background: #fef2f2;
+}
+
+.fav-action-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  flex-shrink: 0;
+  color: var(--text-muted);
+}
+
+.fav-action-item.is-danger .fav-action-icon { color: #ef4444; }
+
+.fav-action-icon svg {
+  width: 16px;
+  height: 16px;
+}
+
+.fav-action-divider {
+  height: 1px;
+  background: var(--border);
+  margin: 4px 6px;
+}
+
+/* ===== Folder picker dialog ===== */
+.fav-folder-dialog {
+  max-width: min(440px, 92vw);
+  display: flex;
+  flex-direction: column;
+  padding: 0;
+  overflow: hidden;
+  gap: 0;
+}
+
+.fav-folder-header {
+  padding: 22px 22px 16px;
+  border-bottom: 1px solid var(--border);
+}
+
+.fav-folder-body {
+  padding: 14px 14px 6px;
+  max-height: 50vh;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(0, 0, 0, 0.15) transparent;
+}
+
+.fav-folder-body::-webkit-scrollbar {
+  width: 6px;
+}
+
+.fav-folder-body::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.fav-folder-body::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.15);
+  border-radius: 3px;
+}
+
+.fav-folder-body::-webkit-scrollbar-thumb:hover {
+  background: rgba(0, 0, 0, 0.25);
+}
+
+.fav-folder-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 12px 16px;
+  border-top: 1px solid var(--border);
+  background: #fafbfc;
+}
+
+.fav-folder-dialog .binas-confirm-title {
+  margin: 0 0 0;
+  font-size: 19px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+
+.fav-folder-dialog .binas-confirm-text {
+  margin: 6px 0 0;
+  font-size: 13px;
+  color: var(--text-muted);
+}
+
+.fav-folder-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  padding: 0;
+  margin: 0;
+  background: transparent;
+  border: none;
+}
+
+.fav-folder-option {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 10px 10px;
+  background: transparent;
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+  text-align: left;
+  font-size: 14px;
+  color: var(--text-main);
+  width: 100%;
+  transition: background 0.12s ease, color 0.12s ease;
+}
+
+.fav-folder-option:hover {
+  background: #f1f5f9;
+}
+
+.fav-folder-option:focus-visible {
+  outline: none;
+  background: #f1f5f9;
+  box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.35);
+}
+
+.fav-folder-option.is-selected {
+  background: rgba(37, 99, 235, 0.08);
+}
+
+.fav-folder-option.is-selected:hover {
+  background: rgba(37, 99, 235, 0.12);
+}
+
+/* Folder/star icon disc — coloured square with a white icon, like the
+   reference dialog (Toets SK H4 / Formules / PO Genetica). */
+.fav-folder-icon {
+  flex-shrink: 0;
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 9px;
+  background: #ffffff;
+  color: var(--primary);
+}
+
+.fav-folder-icon svg {
+  width: 18px;
+  height: 18px;
+}
+
+.fav-folder-icon--filled {
+  color: #ffffff;
+}
+
+.fav-folder-icon--root {
+  background: #fde68a;
+  color: #d97706;
+}
+
+.fav-folder-text {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.fav-folder-label {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-main);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  line-height: 1.3;
+}
+
+.fav-folder-option.is-selected .fav-folder-label {
+  color: var(--primary);
+}
+
+.fav-folder-sub {
+  font-size: 12px;
+  color: var(--text-muted);
+  font-weight: 400;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  line-height: 1.3;
+}
+
+.fav-folder-count {
+  font-size: 11px;
+  color: var(--text-muted);
+  background: rgba(15, 23, 42, 0.06);
+  padding: 3px 9px;
+  border-radius: 999px;
+  font-weight: 600;
+  flex-shrink: 0;
+}
+
+.fav-folder-check {
+  flex-shrink: 0;
+  width: 22px;
+  height: 22px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--primary);
+  opacity: 0;
+  transition: opacity 0.12s ease;
+}
+
+.fav-folder-check svg {
+  width: 16px;
+  height: 16px;
+}
+
+.fav-folder-option.is-selected .fav-folder-check {
+  opacity: 1;
+}
+
+.fav-folder-new {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: transparent;
+  border: none;
+  color: var(--primary);
+  padding: 6px 4px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 600;
+  margin: 0;
+  transition: color 0.15s, background 0.15s;
+}
+
+.fav-folder-new:hover {
+  color: #1d4ed8;
+  background: rgba(37, 99, 235, 0.06);
+}
+
+.fav-folder-new-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.fav-folder-new-icon svg {
+  width: 14px;
+  height: 14px;
+}
+
+/* Drag-out drop zone — sibling of the favorites list. Always laid out
+   using `display: flex` (so it doesn't cause a layout shift mid-drag),
+   but hidden via opacity + height when not active. Pointer-events are
+   disabled when hidden so it doesn't intercept events outside an active
+   drag. Some browsers cancel the drag if the source element shifts
+   position during dragstart, which is why we keep the layout stable. */
+.root-drop-zone {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 0 14px;
+  margin: 0 8px;
+  height: 0;
+  overflow: hidden;
+  border: 2px dashed transparent;
+  border-radius: 10px;
+  background: transparent;
+  color: var(--primary);
+  font-size: 13px;
+  font-weight: 600;
+  text-align: center;
+  cursor: pointer;
+  user-select: none;
+  pointer-events: none;
+  opacity: 0;
+  box-shadow: none;
+  transition: opacity 0.15s ease, background 0.15s ease, border-color 0.15s ease, transform 0.15s ease;
+}
+
+.root-drop-zone-text {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.root-drop-zone-text::before {
+  content: '';
+  width: 18px;
+  height: 18px;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%232563eb' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z'/%3E%3Cpolyline points='14 8 11 5 8 8'/%3E%3Cline x1='11' y1='5' x2='11' y2='13'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: contain;
+  flex-shrink: 0;
+}
+
+/* Reveal the zone only while a folder-child favourite is being dragged.
+   Switch from "0 height / no border / pointer-events: none" to fully
+   visible. Border, padding and bg fade in via transition. */
+body.is-dragging-from-folder .root-drop-zone {
+  height: 46px;
+  margin: 4px 8px 10px;
+  padding: 12px 14px;
+  border-color: var(--primary);
+  background: rgba(37, 99, 235, 0.06);
+  opacity: 1;
+  pointer-events: auto;
+  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.1);
+}
+
+.root-drop-zone.drag-over {
+  background: rgba(37, 99, 235, 0.16) !important;
+  border-color: var(--primary);
+  transform: scale(1.01);
+}
+
+/* ===== Improved drop indicators =====
+   Three distinct visual cues so the user always knows what dropping will do:
+   - .drop-before / .drop-after: a horizontal insertion line above/below the
+     hovered LI, signalling "insert here as sibling".
+   - .drag-into: a soft tinted background on the LI/folder header, signalling
+     "drop INSIDE this folder". */
+.fav-node {
+  position: relative;
+}
+
+.fav-node.drop-before::before,
+.fav-node.drop-after::after {
+  content: '';
+  position: absolute;
+  left: 6px;
+  right: 6px;
+  height: 3px;
+  border-radius: 2px;
+  background: var(--primary);
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
+  pointer-events: none;
+  z-index: 2;
+}
+
+.fav-node.drop-before::before { top: -2px; }
+.fav-node.drop-after::after { bottom: -2px; }
+
+/* Folder LI: dropping INTO the folder. Highlight the header so it's clear
+   the item will land inside, and gently outline the folder body. */
+.fav-folder.drag-into > .folder-container > .folder-header {
+  background: rgba(37, 99, 235, 0.10);
+  box-shadow: inset 0 0 0 2px var(--primary);
+  border-radius: 8px;
+}
+
+.fav-folder.drag-into > .folder-container {
+  background: rgba(37, 99, 235, 0.04);
+  border-radius: 8px;
+}
+
+/* Empty folder gets a clearer "drop target" treatment so it stops looking
+   like dead text mid-drag. */
+.fav-folder.drag-into > .folder-container > .folder-items .folder-empty-placeholder {
+  background: rgba(37, 99, 235, 0.08);
+  color: var(--primary);
+  font-style: normal;
+  font-weight: 500;
+  border-radius: 6px;
+  border: 1px dashed var(--primary);
+}
+
+/* Suppress the old generic .drag-over styling on fav nodes — it's now
+   replaced by the more specific indicators above. We keep .drag-over for
+   the root drop zone, which has its own styling. */
+.fav-node.drag-over {
+  background: transparent !important;
+  box-shadow: none;
+}
+
+.fav-node.drag-over::before {
+  content: none;
+}
+
+/* Slightly dim non-target items while a drag is in progress so the eye is
+   drawn to the active drop indicator. */
+body.is-dragging-favorite #favorites-list > .fav-node:not(.dragging):not(.drop-before):not(.drop-after):not(.drag-into) {
+  opacity: 0.85;
+}
+
+/* ===== Folder picker dialog: extended layout ===== */
+
+/* Item-context chip — shows what favourite is being added/moved.
+   Uses the subject (theme) colour as a coloured badge with the tabel number
+   inside, plus the title in plain text next to it. */
+.fav-picker-chip {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 0 0;
+  margin: 14px 0 0;
+  font-size: 14px;
+  color: var(--text-main);
+  min-width: 0;
+}
+
+.fav-picker-chip-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 38px;
+  height: 38px;
+  padding: 0 6px;
+  background: #475569;
+  border-radius: 10px;
+  font-weight: 700;
+  color: #ffffff;
+  font-size: 15px;
+  line-height: 1;
+  letter-spacing: 0.01em;
+  font-variant-numeric: tabular-nums;
+}
+
+.fav-picker-chip-num,
+.fav-picker-chip-suffix {
+  font-weight: 700;
+  font-size: inherit;
+  line-height: 1;
+}
+
+.fav-picker-chip-title {
+  flex: 1;
+  min-width: 0;
+  font-weight: 700;
+  color: var(--text-main);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-size: 15px;
+}
+
+/* Primary "geen map" option — sits as the first row of the body, no extra
+   border or chrome so it visually flows with the folder list below. */
+.fav-folder-primary {
+  margin-bottom: 6px;
+}
+
+.fav-folder-primary .fav-folder-option {
+  background: transparent;
+}
+
+.fav-folder-primary .fav-folder-option:hover,
+.fav-folder-primary .fav-folder-option:focus-visible {
+  background: #f1f5f9;
+  outline: none;
+}
+
+.fav-folder-primary .fav-folder-option.is-selected {
+  background: rgba(37, 99, 235, 0.08);
+}
+
+/* Section label between the primary action and the folder list. */
+.fav-folder-section-label {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-muted);
+  margin: 10px 12px 4px;
+}
+
+/* "Nieuwe map" inline form. Hidden by default; revealed when the user
+   clicks the "Nieuwe map" trigger. */
+.fav-folder-new-wrap {
+  margin: 0;
+  flex: 1;
+  min-width: 0;
+}
+
+.fav-folder-new-form {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px;
+  background: #ffffff;
+  border: 1px solid var(--primary);
+  border-radius: 10px;
+}
+
+.fav-folder-new-input {
+  flex: 1;
+  min-width: 0;
+  padding: 8px 10px;
+  font-size: 14px;
+  border: none;
+  background: transparent;
+  outline: none;
+  color: var(--text-main);
+}
+
+.fav-folder-new-input::placeholder {
+  color: var(--text-muted);
+}
+
+.fav-folder-new-confirm {
+  padding: 8px 14px;
+  border: none;
+  border-radius: 8px;
+  background: var(--primary);
+  color: #ffffff;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.fav-folder-new-confirm:hover {
+  background: #1d4ed8;
+}
+
+.fav-folder-new-cancel {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  border: none;
+  background: transparent;
+  border-radius: 6px;
+  color: var(--text-muted);
+  font-size: 18px;
+  line-height: 1;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+}
+
+.fav-folder-new-cancel:hover {
+  background: #f1f5f9;
+  color: var(--text-main);
+}
+
+/* When the inline form is active, the "Nieuwe map" button is hidden. */
+.fav-folder-new-wrap.is-creating .fav-folder-new {
+  display: none;
+}
+
+/* When creating a folder, the form takes over the whole footer width. */
+.fav-folder-footer:has(.fav-folder-new-wrap.is-creating) {
+  align-items: stretch;
+}
+
+.fav-folder-footer:has(.fav-folder-new-wrap.is-creating) .binas-confirm-btn--cancel {
+  display: none;
+}
+
+/* Folder list inside the picker dialog — no extra chrome, the scrolling
+   container is the dialog body. */
+.fav-folder-dialog .fav-folder-list {
+  margin: 0;
+  max-height: none;
+  overflow: visible;
+}
+
+/* Make the always-visible drag handle a touch more discoverable. */
+.favorites-view .nav-item-content .drag-handle {
+  opacity: 0.18;
+}
+
+.favorites-view .nav-item-content:hover .drag-handle {
+  opacity: 0.55;
+}
+
+
+/* =====================================================================
+   Folder grid card UX (Favorieten tab)
+   ===================================================================== */
+
+.favorites-body {
+  padding: 8px 4px 24px;
+}
+
+.fav-section-label {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  color: #999;
+  margin: 14px 4px 8px;
+}
+
+.fav-folder-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.fav-folder-card {
+  --folder-color: #1F5FAE;
+  position: relative;
+  border-radius: 12px;
+  overflow: hidden;
+  background: white;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+  transition: transform 160ms ease, box-shadow 160ms ease;
+  color: #fff;
+  min-height: 0;
+}
+
+.fav-folder-card:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 14px rgba(0, 0, 0, 0.10);
+}
+
+.fav-folder-card-open {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  padding: 0;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  text-align: left;
+  font: inherit;
+  color: inherit;
+}
+
+.fav-folder-card-top {
+  background: var(--folder-color);
+  padding: 8px 10px 4px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.fav-folder-card-icon {
+  font-family: inherit;
+  font-size: 15px;
+  line-height: 1;
+}
+
+.fav-folder-card-count {
+  font-size: 10px;
+  font-weight: 700;
+  opacity: 0.85;
+}
+
+.fav-folder-card-chips {
+  background: var(--folder-color);
+  padding: 0 10px 8px;
+  display: flex;
+  gap: 3px;
+  align-items: center;
+  flex-wrap: wrap;
+  min-height: 14px;
+}
+
+.fav-folder-card-chip {
+  background: rgba(255, 255, 255, 0.22);
+  padding: 1px 5px;
+  border-radius: 3px;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.2px;
+  line-height: 1.4;
+}
+
+.fav-folder-card-overflow {
+  font-size: 9px;
+  opacity: 0.85;
+  font-weight: 700;
+}
+
+.fav-folder-card-name {
+  background: white;
+  color: #222;
+  padding: 6px 10px 8px;
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: -0.2px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.fav-folder-card-more {
+  position: absolute;
+  top: 5px;
+  right: 5px;
+  width: 22px;
+  height: 22px;
+  border-radius: 6px;
+  border: none;
+  background: rgba(0, 0, 0, 0.18);
+  color: rgba(255, 255, 255, 0.92);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  opacity: 0;
+  transition: opacity 120ms, background 120ms;
+}
+
+.fav-folder-card-more svg { width: 14px; height: 14px; }
+.fav-folder-card:hover .fav-folder-card-more,
+.fav-folder-card-more:focus-visible { opacity: 1; }
+.fav-folder-card-more:hover { background: rgba(0, 0, 0, 0.32); }
+
+.fav-folder-card--new {
+  background: transparent;
+  border: 1.5px dashed #d0d0d0;
+  color: #999;
+  align-items: center;
+  justify-content: center;
+  box-shadow: none;
+  display: flex;
+  gap: 4px;
+  flex-direction: column;
+  padding: 14px 8px;
+  min-height: 78px;
+  cursor: pointer;
+}
+
+.fav-folder-card--new:hover {
+  border-color: #999;
+  color: #333;
+  transform: none;
+  box-shadow: none;
+}
+
+.fav-folder-card-plus {
+  font-size: 22px;
+  font-weight: 300;
+  line-height: 1;
+}
+
+.fav-folder-card-newlabel {
+  font-size: 10.5px;
+  font-weight: 600;
+}
+
+/* Loose favorites */
+.fav-loose-list {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.fav-loose-row {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 4px;
+  border-radius: 8px;
+  color: #222;
+}
+
+.fav-loose-row:hover {
+  background: #f5f5f5;
+}
+
+.fav-loose-open {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 6px 6px;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  text-align: left;
+  font: inherit;
+  color: inherit;
+  min-width: 0;
+}
+
+.fav-loose-num {
+  width: 30px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 700;
+  background: rgba(0, 0, 0, 0.04);
+  border-radius: 6px;
+  padding: 4px 0;
+  color: var(--section-color, #1F5FAE);
+  flex: 0 0 30px;
+}
+
+.fav-loose-title {
+  flex: 1;
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.fav-loose-move,
+.fav-loose-more {
+  border: none;
+  background: transparent;
+  width: 26px;
+  height: 26px;
+  border-radius: 6px;
+  cursor: pointer;
+  color: #999;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transition: opacity 120ms, background 120ms, color 120ms;
+  padding: 0;
+}
+
+.fav-loose-move svg,
+.fav-loose-more svg { width: 14px; height: 14px; }
+
+.fav-loose-row:hover .fav-loose-move,
+.fav-loose-row:hover .fav-loose-more,
+.fav-loose-move:focus-visible,
+.fav-loose-more:focus-visible { opacity: 1; }
+
+.fav-loose-move:hover,
+.fav-loose-more:hover {
+  background: rgba(0, 0, 0, 0.06);
+  color: #333;
+}
+
+/* Color themes for loose rows */
+.fav-loose-row[data-theme='algemeen'] { --section-color: #c94195; }
+.fav-loose-row[data-theme='natuurkunde'] { --section-color: #0163ac; }
+.fav-loose-row[data-theme='wiskunde'] { --section-color: #a0341a; }
+.fav-loose-row[data-theme='scheikunde'] { --section-color: #ff3b2d; }
+.fav-loose-row[data-theme='biologie'] { --section-color: #2c9a44; }
+.fav-loose-row[data-theme='register'] { --section-color: #aa9b88; }
+
+/* Folder detail view */
+.fav-folder-detail {
+  --folder-color: #1F5FAE;
+  display: flex;
+  flex-direction: column;
+  margin: -8px -14px 0;
+}
+
+.fav-folder-detail-header {
+  background: var(--folder-color);
+  color: white;
+  padding: 14px 18px 14px;
+  position: sticky;
+  top: -14px;
+  z-index: 3;
+}
+
+/* When inside a folder, hide the static "Favorieten" title bar so the
+   colored folder banner can sit cleanly at the top. */
+.favorites-view.is-in-folder .favorites-header { display: none; }
+
+.fav-folder-back {
+  background: rgba(255, 255, 255, 0.2);
+  color: white;
+  border: none;
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.fav-folder-back:hover {
+  background: rgba(255, 255, 255, 0.32);
+}
+
+.fav-folder-more {
+  position: absolute;
+  top: 12px;
+  right: 14px;
+  width: 28px;
+  height: 28px;
+  border: none;
+  background: rgba(255, 255, 255, 0.2);
+  color: white;
+  border-radius: 8px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.fav-folder-more svg {
+  width: 16px;
+  height: 16px;
+}
+
+.fav-folder-detail-meta {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 14px;
+}
+
+.fav-folder-detail-icon {
+  width: 44px;
+  height: 44px;
+  border-radius: 11px;
+  background: rgba(255, 255, 255, 0.22);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: inherit;
+  font-size: 22px;
+}
+
+.fav-folder-detail-name {
+  font-family: inherit;
+  font-size: 18px;
+  font-weight: 700;
+  line-height: 1.1;
+}
+
+.fav-folder-detail-count {
+  font-size: 11px;
+  opacity: 0.85;
+}
+
+.fav-folder-detail-list {
+  padding: 10px 6px 18px;
+  display: flex;
+  flex-direction: column;
+}
+
+.fav-folder-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 12px;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  text-align: left;
+  border-radius: 8px;
+  font: inherit;
+  color: #222;
+}
+
+.fav-folder-item:hover { background: #f5f5f5; }
+
+.fav-folder-item-badge {
+  flex: 0 0 36px;
+  height: 36px;
+  border-radius: 8px;
+  background: var(--folder-color);
+  color: white;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-family: inherit;
+  font-weight: 700;
+  font-size: 14px;
+}
+
+.fav-folder-item-badge .label-part-num,
+.fav-folder-item-badge .label-part-suffix { color: white; }
+
+.fav-folder-item-text {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.fav-folder-item-section {
+  font-size: 9.5px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  color: var(--folder-color);
+}
+
+.fav-folder-item-title {
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.fav-folder-item-more {
+  border: none;
+  background: transparent;
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
+  cursor: pointer;
+  color: #999;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transition: opacity 120ms;
+}
+
+.fav-folder-item-more svg { width: 16px; height: 16px; }
+.fav-folder-item:hover .fav-folder-item-more { opacity: 1; }
+
+.fav-folder-detail-empty {
+  text-align: center;
+  padding: 32px 16px;
+  color: #888;
+}
+
+.fav-folder-detail-empty-icon {
+  display: inline-flex;
+  width: 40px;
+  height: 40px;
+  border-radius: 999px;
+  background: #f3f3f3;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 8px;
+  color: #ccc;
+}
+
+.fav-folder-detail-empty-icon svg { width: 18px; height: 18px; }
+.fav-folder-detail-empty p { margin: 0; font-size: 12.5px; line-height: 1.45; }
+
+/* Folder editor dialog */
+.folder-editor {
+  width: 340px;
+  max-width: 90vw;
+}
+
+.folder-editor-name {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid var(--border, #e3e3e3);
+  border-radius: 8px;
+  font-size: 13px;
+  margin: 6px 0 14px;
+  box-sizing: border-box;
+}
+
+.folder-editor-label {
+  font-size: 11px;
+  font-weight: 700;
+  color: #888;
+  margin: 8px 0 6px;
+  letter-spacing: 0.4px;
+}
+
+.folder-editor-colors,
+.folder-editor-icons {
+  display: flex;
+  gap: 6px;
+  margin-bottom: 14px;
+  flex-wrap: wrap;
+}
+
+.folder-editor-color {
+  width: 28px;
+  height: 28px;
+  border: 2px solid transparent;
+  border-radius: 999px;
+  cursor: pointer;
+  padding: 0;
+}
+
+.folder-editor-color.is-active {
+  border-color: #222;
+}
+
+.folder-editor-icon {
+  width: 30px;
+  height: 30px;
+  border: 1px solid #e3e3e3;
+  background: white;
+  border-radius: 8px;
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 14px;
+}
+
+.folder-editor-icon.is-active {
+  border: 2px solid #222;
+}
+
+.folder-editor-save {
+  color: white;
+  border: none;
+}
+
+/* =====================================================================
+   Recent tab
+   ===================================================================== */
+/* ── Recent view ───────────────────────────────── */
+
+.recent-header {
+  position: sticky;
+  top: -14px;
+  margin: -14px -14px 0;
+  padding: 12px 14px 12px;
+  border-bottom: 1px solid var(--border, #eee);
+  background: #fff;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.recent-title {
+  font-size: 18px;
+  font-weight: 700;
+  letter-spacing: -0.2px;
+  color: #222;
+  margin: 0;
+}
+
+.recent-body {
+  padding: 10px 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.recent-empty {
+  padding: 28px 8px;
+  text-align: center;
+  color: #aaa;
+  font-size: 13px;
+}
+
+.recent-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 6px;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  border-radius: 8px;
+  text-align: left;
+  width: 100%;
+  font: inherit;
+  transition: background 100ms;
+}
+
+.recent-row:hover { background: #f7f7f7; }
+
+.recent-row-num {
+  width: 34px;
+  height: 34px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  font-weight: 700;
+  font-family: inherit;
+  flex: 0 0 34px;
+}
+
+.recent-row-body {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.recent-row-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: #222;
+  font-family: inherit;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.recent-row-vak {
+  font-size: 9.5px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+}
+
+/* ── Category Selector (left sidebar) ── */
+.vak-selector {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: 12px 0 8px;
+  margin-top: 6px;
+  border-top: 1px solid var(--border);
+  width: 100%;
+}
+
+.vak-selector-btn {
+  width: 34px;
+  height: 34px;
+  border-radius: 9px;
+  border: none;
+  background: transparent;
+  color: var(--text-muted, #64748b);
+  cursor: pointer;
+  font-family: inherit;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 140ms ease, color 140ms ease;
+  position: relative;
+  padding: 0;
+}
+
+.vak-selector-btn svg {
+  width: 18px;
+  height: 18px;
+  display: block;
+}
+
+.vak-selector-btn:hover:not(.is-active) {
+  background: var(--cat-tint, #f1f5f9);
+  color: var(--cat-color, #334155);
+}
+
+.vak-selector-btn.is-active {
+  background: var(--cat-color, #334155);
+  color: #fff;
+}
+
+.vak-selector-btn--all.is-active {
+  background: var(--cat-color, #334155);
+}
+
+.vak-selector-btn:focus-visible {
+  outline: 2px solid var(--cat-color, #334155);
+  outline-offset: 2px;
+}
+
+.vak-selector-btn[title]::after {
+  content: attr(title);
+  position: absolute;
+  left: calc(100% + 10px);
+  top: 50%;
+  transform: translate(-4px, -50%);
+  background: #1f2937;
+  color: #fff;
+  padding: 4px 8px;
+  border-radius: 6px;
+  font-size: 11px;
+  font-weight: 500;
+  white-space: nowrap;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 120ms ease, transform 120ms ease;
+  z-index: 200;
+}
+
+.vak-selector-btn:hover::after {
+  opacity: 1;
+  transform: translate(0, -50%);
+}

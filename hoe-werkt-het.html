@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+  <meta charset="UTF-8" />
+  <script src="gate.js"></script>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Hoe werkt het - Digitale Binas</title>
+  <link rel="stylesheet" href="marketing.css" />
+  <link rel="icon" type="image/png" href="favicon.png" />
+</head>
+<body>
+  <header>
+    <div class="header-inner">
+      <a href="/home" class="logo">Digitale <span>Binas</span></a>
+      <nav class="nav-links">
+        <a href="/home">Home</a>
+        <a href="/over">Over</a>
+        <a href="/hoe-werkt-het" class="active">Hoe werkt het</a>
+        <a href="/contact">Contact</a>
+      </nav>
+      <a href="/" class="btn-primary">Open App</a>
+    </div>
+  </header>
+
+  <main>
+    <div class="container">
+      <h1 class="page-title">Hoe werkt het?</h1>
+
+      <div class="content-section">
+        <p>
+          Het gebruik van Digitale Binas is heel eenvoudig. We hebben de interface zo ontworpen dat je zo min mogelijk tijd kwijt bent aan zoeken.
+        </p>
+      </div>
+
+      <div class="content-section">
+        <h2>1. Zoeken</h2>
+        <p>
+          Gebruik de zoekbalk bovenaan de zijbalk. Je kunt zoeken op de naam van een tabel (bijv. "Periodiek Systeem") of op het tabelnummer (bijv. "99"). De resultaten verschijnen direct.
+        </p>
+      </div>
+
+      <div class="content-section">
+        <h2>2. Navigeren</h2>
+        <p>
+          Klik op een zoekresultaat of blader door de categorieën in de zijbalk om een tabel te openen. De PDF-viewer springt automatisch naar de juiste pagina.
+        </p>
+      </div>
+
+      <div class="content-section">
+        <h2>3. Favorieten</h2>
+        <p>
+          Markeer tabellen als favoriet en orden ze in mappen. Log je in, dan worden je favorieten
+          gesynchroniseerd tussen al je apparaten.
+        </p>
+      </div>
+
+      <div style="margin-top: 40px; text-align: center;">
+          <p>Klaar om te beginnen?</p>
+          <a href="/" class="btn-primary">Ga naar de App</a>
+      </div>
+    </div>
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+      <div class="copyright" id="footer-copyright"></div>
+      <div class="footer-links">
+        <a href="/privacy">Privacy</a>
+        <a href="/terms-of-service">Voorwaarden</a>
+        <a href="/legal">Legal</a>
+        <a href="/contact">Contact</a>
+      </div>
+    </div>
+  </footer>
+  <script type="module">
+    import BINAS_CONFIG from './config.js';
+    const copyrightEl = document.getElementById('footer-copyright');
+    if (copyrightEl && BINAS_CONFIG?.copyright) {
+      copyrightEl.textContent = BINAS_CONFIG.copyright;
+    } else if (copyrightEl) {
+      copyrightEl.textContent = '© 2025 Binas.app';
+    }
+  </script>
+</body>
+</html>

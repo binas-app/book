@@ -1,0 +1,500 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+  <meta charset="UTF-8" />
+  <script src="gate.js"></script>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Align tool – Binas tabel-posities</title>
+  <meta name="robots" content="noindex,nofollow" />
+  <link rel="icon" type="image/png" href="favicon.png" />
+  <style>
+    :root {
+      --bg: #0f172a;
+      --panel: #1e293b;
+      --panel-2: #273449;
+      --border: #334155;
+      --text: #e2e8f0;
+      --text-muted: #94a3b8;
+      --accent: #38bdf8;
+      --accent-strong: #0ea5e9;
+      --good: #22c55e;
+      --warn: #eab308;
+      --danger: #ef4444;
+    }
+
+    * { box-sizing: border-box; }
+
+    html, body {
+      margin: 0;
+      padding: 0;
+      height: 100%;
+      background: var(--bg);
+      color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      font-size: 14px;
+      overflow: hidden;
+    }
+
+    .app {
+      display: grid;
+      grid-template-rows: auto 1fr auto;
+      height: 100vh;
+    }
+
+    /* Header */
+    .topbar {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 10px 14px;
+      background: var(--panel);
+      border-bottom: 1px solid var(--border);
+      flex-wrap: wrap;
+    }
+    .topbar h1 {
+      font-size: 16px;
+      margin: 0;
+      letter-spacing: 0.2px;
+    }
+    .topbar .sep {
+      width: 1px;
+      height: 22px;
+      background: var(--border);
+    }
+    .topbar .status {
+      color: var(--text-muted);
+      font-size: 12px;
+      line-height: 1.4;
+    }
+    .topbar .status strong { color: var(--text); }
+
+    button, .btn {
+      background: var(--panel-2);
+      color: var(--text);
+      border: 1px solid var(--border);
+      padding: 6px 10px;
+      border-radius: 6px;
+      font-size: 12px;
+      cursor: pointer;
+      font-family: inherit;
+    }
+    button:hover { background: #334155; }
+    button.primary {
+      background: var(--accent-strong);
+      border-color: var(--accent-strong);
+      color: white;
+    }
+    button.primary:hover { background: #0284c7; }
+    button.good {
+      background: var(--good);
+      border-color: var(--good);
+      color: white;
+    }
+    button.danger {
+      background: var(--danger);
+      border-color: var(--danger);
+      color: white;
+    }
+    button:disabled { opacity: 0.4; cursor: not-allowed; }
+
+    input[type="text"], input[type="number"], input[type="search"], input[type="file"], select {
+      background: var(--panel-2);
+      color: var(--text);
+      border: 1px solid var(--border);
+      padding: 6px 8px;
+      border-radius: 6px;
+      font-size: 12px;
+      font-family: inherit;
+    }
+
+    /* Main 3-column layout */
+    .main {
+      display: grid;
+      grid-template-columns: 280px 1fr 1fr;
+      min-height: 0;
+      height: 100%;
+    }
+
+    /* Sidebar: tables list */
+    .sidebar {
+      background: var(--panel);
+      border-right: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      min-height: 0;
+    }
+    .sidebar-header {
+      padding: 10px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .sidebar-header input { width: 100%; }
+    .legend {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      font-size: 11px;
+      color: var(--text-muted);
+    }
+    .legend .dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      display: inline-block;
+      margin-right: 4px;
+      vertical-align: middle;
+    }
+    .legend .dot.aligned { background: var(--good); }
+    .legend .dot.unaligned { background: var(--text-muted); }
+
+    .nav-list {
+      list-style: none;
+      margin: 0;
+      padding: 4px 0;
+      overflow-y: auto;
+      flex: 1;
+      min-height: 0;
+    }
+    .nav-section {
+      padding: 8px 12px 4px;
+      font-size: 10px;
+      letter-spacing: 0.6px;
+      text-transform: uppercase;
+      color: var(--text-muted);
+    }
+    .nav-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 10px 6px 14px;
+      cursor: pointer;
+      border-left: 3px solid transparent;
+      font-size: 13px;
+    }
+    .nav-item:hover { background: var(--panel-2); }
+    .nav-item.active {
+      background: var(--panel-2);
+      border-left-color: var(--accent);
+    }
+    .nav-item.is-sub {
+      padding-left: 26px;
+      font-size: 12px;
+      color: var(--text-muted);
+    }
+    .nav-item .label-badge {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 22px;
+      height: 18px;
+      padding: 0 4px;
+      background: var(--panel-2);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      font-size: 10px;
+      color: var(--text-muted);
+      flex-shrink: 0;
+    }
+    .nav-item.is-sub .label-badge {
+      min-width: 18px;
+      font-size: 9px;
+    }
+    .nav-item .item-title {
+      flex: 1;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    .nav-item .status-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+    .nav-item.aligned .status-dot { background: var(--good); }
+    .nav-item:not(.aligned) .status-dot { background: var(--text-muted); opacity: 0.5; }
+    .nav-item.has-marker-only .status-dot { background: var(--warn); }
+
+    /* Custom PDF viewer */
+    .custom-viewer {
+      display: flex;
+      flex-direction: column;
+      min-height: 0;
+      border-right: 1px solid var(--border);
+    }
+    .viewer-toolbar {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 10px;
+      background: var(--panel);
+      border-bottom: 1px solid var(--border);
+      flex-wrap: wrap;
+    }
+    .viewer-toolbar .label {
+      font-size: 11px;
+      color: var(--text-muted);
+    }
+    .viewer-stage {
+      position: relative;
+      flex: 1;
+      min-height: 0;
+      overflow: auto;
+      background: #0b1220;
+      padding: 16px;
+      cursor: crosshair;
+    }
+    .viewer-stage[data-loading="true"]::after {
+      content: 'PDF laden...';
+      position: absolute;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--text-muted);
+      font-size: 13px;
+      pointer-events: none;
+    }
+    .page-frame {
+      position: relative;
+      margin: 0 auto;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.5);
+      background: white;
+    }
+    .page-canvas {
+      display: block;
+    }
+    .marker-line {
+      position: absolute;
+      left: 0;
+      right: 0;
+      height: 0;
+      border-top: 2px solid var(--danger);
+      pointer-events: none;
+      z-index: 5;
+    }
+    .marker-line::before {
+      content: attr(data-tag);
+      position: absolute;
+      left: -2px;
+      top: -22px;
+      background: var(--danger);
+      color: white;
+      padding: 2px 6px;
+      font-size: 10px;
+      border-radius: 3px;
+      white-space: nowrap;
+    }
+    .marker-line.preview {
+      border-top-style: dashed;
+      border-top-color: var(--accent);
+      opacity: 0.7;
+    }
+    .marker-line.preview::before {
+      background: var(--accent);
+    }
+
+    .ruler {
+      position: absolute;
+      top: 16px;
+      bottom: 16px;
+      left: 0;
+      width: 28px;
+      pointer-events: none;
+      font-size: 9px;
+      color: var(--text-muted);
+    }
+
+    /* Embedded viewer */
+    .embedded-viewer {
+      display: flex;
+      flex-direction: column;
+      min-height: 0;
+    }
+    .embedded-stage {
+      flex: 1;
+      min-height: 0;
+      position: relative;
+      background: #0b1220;
+    }
+    .embedded-stage iframe {
+      width: 100%;
+      height: 100%;
+      border: 0;
+      background: white;
+    }
+
+    /* Bottom panel */
+    .bottombar {
+      padding: 10px 14px;
+      background: var(--panel);
+      border-top: 1px solid var(--border);
+      display: flex;
+      gap: 16px;
+      align-items: center;
+      flex-wrap: wrap;
+      font-size: 12px;
+    }
+    .field {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+    .field label {
+      font-size: 10px;
+      color: var(--text-muted);
+      letter-spacing: 0.4px;
+      text-transform: uppercase;
+    }
+    .field input { width: 110px; }
+
+    .help {
+      font-size: 11px;
+      color: var(--text-muted);
+      max-width: 480px;
+      line-height: 1.4;
+    }
+    .help kbd {
+      background: var(--panel-2);
+      border: 1px solid var(--border);
+      border-radius: 3px;
+      padding: 1px 4px;
+      font-size: 10px;
+    }
+
+    .pill {
+      display: inline-block;
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-size: 10px;
+      letter-spacing: 0.4px;
+      text-transform: uppercase;
+      background: var(--panel-2);
+      border: 1px solid var(--border);
+      color: var(--text-muted);
+    }
+    .pill.good { color: var(--good); border-color: var(--good); }
+    .pill.warn { color: var(--warn); border-color: var(--warn); }
+
+    /* Hidden helper */
+    input[type="file"].hidden { display: none; }
+
+    @media (max-width: 1100px) {
+      .main { grid-template-columns: 240px 1fr 1fr; }
+    }
+    @media (max-width: 900px) {
+      .main { grid-template-columns: 220px 1fr; }
+      .embedded-viewer { display: none; }
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <!-- Top bar -->
+    <header class="topbar">
+      <h1>Align tool</h1>
+      <span class="sep"></span>
+      <div class="status" id="status">
+        Geen tabel geselecteerd. Kies een tabel uit de lijst om te beginnen.
+      </div>
+      <div style="flex:1"></div>
+      <button id="btn-save" class="primary" disabled>Opslaan (S)</button>
+      <button id="btn-clear-current" disabled>Wis huidige</button>
+      <span class="sep"></span>
+      <button id="btn-export">Export JSON</button>
+      <button id="btn-import">Import JSON</button>
+      <input type="file" id="import-file" class="hidden" accept="application/json,.json" />
+      <button id="btn-reset-all" class="danger" title="Verwijder alle alignment-data uit localStorage">Reset alles</button>
+    </header>
+
+    <!-- Main 3 columns -->
+    <main class="main">
+      <!-- Sidebar -->
+      <aside class="sidebar">
+        <div class="sidebar-header">
+          <input type="search" id="nav-search" placeholder="Zoek in tabellen..." />
+          <div class="legend">
+            <span><span class="dot aligned"></span>uitgelijnd</span>
+            <span><span class="dot unaligned"></span>nog niet</span>
+            <span id="count-info"></span>
+          </div>
+        </div>
+        <ul class="nav-list" id="nav-list"></ul>
+      </aside>
+
+      <!-- Custom viewer -->
+      <section class="custom-viewer">
+        <div class="viewer-toolbar">
+          <span class="label">Custom viewer (pdfjs-dist) – klik om Y-positie te zetten</span>
+          <div style="flex:1"></div>
+          <button id="btn-prev-page" title="Vorige pagina">◀</button>
+          <span id="page-info" class="label">–</span>
+          <button id="btn-next-page" title="Volgende pagina">▶</button>
+          <span class="sep" style="background: var(--border); width: 1px; height: 18px;"></span>
+          <span class="label">Zoom:</span>
+          <button id="btn-zoom-out">−</button>
+          <span id="zoom-info" class="label" style="min-width:42px; text-align:center;">100%</span>
+          <button id="btn-zoom-in">+</button>
+          <button id="btn-zoom-fit">Fit</button>
+        </div>
+        <div class="viewer-stage" id="viewer-stage" data-loading="true">
+          <div class="page-frame" id="page-frame" style="display:none;">
+            <canvas class="page-canvas" id="page-canvas"></canvas>
+            <div class="marker-line preview" id="marker-preview" style="display:none;" data-tag="hover"></div>
+            <div class="marker-line" id="marker-saved" style="display:none;" data-tag="saved"></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Embedded production-like viewer -->
+      <section class="embedded-viewer">
+        <div class="viewer-toolbar">
+          <span class="label">Embedded Mozilla PDF.js viewer – test of de scroll klopt</span>
+          <div style="flex:1"></div>
+          <button id="btn-embed-original">Origineel (alleen page)</button>
+          <button id="btn-embed-aligned" class="primary">Met alignment (page + Y)</button>
+          <button id="btn-embed-reload" title="Herlaad iframe">↻</button>
+        </div>
+        <div class="embedded-stage">
+          <iframe id="embed-iframe" title="Embedded PDF.js viewer"></iframe>
+        </div>
+      </section>
+    </main>
+
+    <!-- Bottom controls -->
+    <footer class="bottombar">
+      <div class="field">
+        <label>Pagina</label>
+        <input type="number" id="input-page" min="1" />
+      </div>
+      <div class="field">
+        <label>Y-fractie (0–1)</label>
+        <input type="number" id="input-fraction" min="0" max="1" step="0.001" />
+      </div>
+      <div class="field">
+        <label>Y in PDF-units (top)</label>
+        <input type="number" id="input-y-pdf" step="0.1" />
+      </div>
+      <div class="field">
+        <label>Pagina-hoogte (PDF)</label>
+        <input type="number" id="input-page-height" step="0.1" disabled />
+      </div>
+      <div class="field" style="min-width:160px;">
+        <label>Geselecteerd item</label>
+        <span id="selected-id" style="font-family: ui-monospace, monospace; font-size: 11px;">–</span>
+      </div>
+      <div style="flex:1"></div>
+      <div class="help">
+        <kbd>klik</kbd> in de witte pagina = Y-positie zetten ·
+        <kbd>S</kbd> opslaan ·
+        <kbd>←</kbd>/<kbd>→</kbd> volgende tabel ·
+        Geel-balletje = wel Y, andere pagina dan oorspronkelijk
+      </div>
+    </footer>
+  </div>
+
+  <script type="module" src="align.js"></script>
+</body>
+</html>
